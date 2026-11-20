@@ -290,6 +290,8 @@ function restartGame() {
 let lastTime = performance.now();
 let accumulator = 0;
 const TICK_DURATION = 1000 / 60;
+let lastMoveX = 0;
+let lastMoveZ = 0;
 
 function animate(currentTime) {
   requestAnimationFrame(animate);
@@ -306,8 +308,13 @@ function animate(currentTime) {
     let moveZ = 0;
     if (keys['KeyW'] || keys['ArrowUp']) moveZ += 1;
     if (keys['KeyS'] || keys['ArrowDown']) moveZ -= 1;
-    if (keys['KeyA'] || keys['ArrowLeft']) moveX -= 1;
-    if (keys['KeyD'] || keys['ArrowRight']) moveX += 1;
+    if (keys['KeyA'] || keys['ArrowLeft']) moveX += 1;
+    if (keys['KeyD'] || keys['ArrowRight']) moveX -= 1;
+
+    if (moveX !== 0 || moveZ !== 0) {
+      lastMoveX = moveX;
+      lastMoveZ = moveZ;
+    }
 
     const input = {
       move: [moveX, moveZ],
@@ -378,13 +385,8 @@ function animate(currentTime) {
   playerGroup.position.set(engine.player.pos[0], 0, engine.player.pos[2]);
 
   // Turn player towards move direction
-  if (keys['KeyW'] || keys['KeyS'] || keys['KeyA'] || keys['KeyD']) {
-    let angle = 0;
-    if (keys['KeyW']) angle = 0;
-    if (keys['KeyS']) angle = Math.PI;
-    if (keys['KeyA']) angle = Math.PI / 2;
-    if (keys['KeyD']) angle = -Math.PI / 2;
-    playerGroup.rotation.y = angle;
+  if (lastMoveX !== 0 || lastMoveZ !== 0) {
+    playerGroup.rotation.y = Math.atan2(lastMoveX, lastMoveZ);
   }
 
   // Smooth Third-person Camera Follow

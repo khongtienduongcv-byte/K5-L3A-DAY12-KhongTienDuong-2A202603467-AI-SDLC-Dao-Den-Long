@@ -297,53 +297,172 @@ function syncLanterns(lanterns) {
     const g = new THREE.Group();
     g.position.set(l.pos[0], l.pos[1], l.pos[2]);
 
-    const pillar = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.25, 0.35, 2.5, 16),
-      new THREE.MeshStandardMaterial({ color: 0x5b5f6e, roughness: 0.9 })
-    );
-    pillar.position.y = 1.25;
+    // 1. Chân bệ đá tam cấp vững chãi
+    const stoneMat1 = new THREE.MeshStandardMaterial({ color: 0x3e4250, roughness: 0.95 });
+    const stoneMat2 = new THREE.MeshStandardMaterial({ color: 0x4f5466, roughness: 0.9 });
+    
+    // Tầng đế 1
+    const base1 = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.85, 0.2, 8), stoneMat1);
+    base1.position.y = 0.1;
+    g.add(base1);
+
+    // Tầng đế 2
+    const base2 = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.68, 0.2, 8), stoneMat2);
+    base2.position.y = 0.28;
+    g.add(base2);
+
+    // Tầng đài sen đỡ cột
+    const lotusBase = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.48, 0.18, 8), stoneMat1);
+    lotusBase.position.y = 0.45;
+    g.add(lotusBase);
+
+    // 2. Thân cột gỗ sơn son thếp vàng
+    const woodMat = new THREE.MeshStandardMaterial({ color: 0x6e2215, roughness: 0.7 }); // Gỗ gụ son trầm
+    const brassMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.8, roughness: 0.3 }); // Đồng ánh kim
+
+    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 2.2, 16), woodMat);
+    pillar.position.y = 1.6;
     g.add(pillar);
 
-    const head = new THREE.Mesh(
-      new THREE.BoxGeometry(0.8, 1.0, 0.8),
-      new THREE.MeshStandardMaterial({
-        color: l.lit ? 0xffb347 : 0x5b5f6e,
-        emissive: l.lit ? 0xffe58a : 0x000000,
-        emissiveIntensity: l.lit ? 1.5 : 0
-      })
-    );
-    head.position.y = 2.8;
-    g.add(head);
+    // Vòng đai đồng trang trí thân cột
+    const ring1 = new THREE.Mesh(new THREE.TorusGeometry(0.21, 0.025, 8, 16), brassMat);
+    ring1.rotation.x = Math.PI / 2;
+    ring1.position.y = 1.1;
+    g.add(ring1);
 
-    const light = new THREE.PointLight(0xffb347, l.lit ? 3 : 0, 16);
-    light.position.y = 2.8;
+    const ring2 = new THREE.Mesh(new THREE.TorusGeometry(0.20, 0.025, 8, 16), brassMat);
+    ring2.rotation.x = Math.PI / 2;
+    ring2.position.y = 2.0;
+    g.add(ring2);
+
+    // 3. Tay rường cột gỗ vươn ra đỡ lồng đèn
+    const corbelGeo = new THREE.BoxGeometry(0.08, 0.08, 0.6);
+    const corbel1 = new THREE.Mesh(corbelGeo, woodMat);
+    corbel1.position.set(0, 2.65, 0);
+    g.add(corbel1);
+
+    const corbel2 = new THREE.Mesh(corbelGeo, woodMat);
+    corbel2.rotation.y = Math.PI / 2;
+    corbel2.position.set(0, 2.65, 0);
+    g.add(corbel2);
+
+    // 4. Lồng đèn Lục giác Hội An
+    const silkMat = new THREE.MeshStandardMaterial({
+      color: l.lit ? 0xff9e1b : 0x7c1e14,
+      emissive: l.lit ? 0xffe58a : 0x3d0b06,
+      emissiveIntensity: l.lit ? 2.2 : 0.6,
+      roughness: 0.5
+    });
+
+    const lanternSilk = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.52, 0.42, 1.05, 6),
+      silkMat
+    );
+    lanternSilk.position.y = 3.15;
+    g.add(lanternSilk);
+
+    // Khung vành gỗ trên và dưới của lồng đèn
+    const rimMat = new THREE.MeshStandardMaterial({ color: 0x3d120a, roughness: 0.8 });
+    const topRim = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.08, 6), rimMat);
+    topRim.position.y = 3.68;
+    g.add(topRim);
+
+    const botRim = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.44, 0.08, 6), rimMat);
+    botRim.position.y = 2.62;
+    g.add(botRim);
+
+    // 5. Mái ngói cong đình làng tứ giác uốn đầu đao
+    const roofMat = new THREE.MeshStandardMaterial({ color: 0x8a2818, roughness: 0.6 });
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(0.85, 0.45, 4), roofMat);
+    roof.rotation.y = Math.PI / 4;
+    roof.position.y = 3.92;
+    g.add(roof);
+
+    // Quả hồ lô đỉnh chóp đồng tụ khí
+    const gourdBot = new THREE.Mesh(new THREE.SphereGeometry(0.1, 10, 10), brassMat);
+    gourdBot.position.y = 4.2;
+    g.add(gourdBot);
+    const gourdTop = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.16, 8), brassMat);
+    gourdTop.position.y = 4.32;
+    g.add(gourdTop);
+
+    // 6. Dải tua rua đỏ đung đưa dưới đáy đèn
+    const tasselGroup = new THREE.Group();
+    tasselGroup.position.set(0, 2.58, 0);
+
+    const tasselBead = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), brassMat);
+    tasselBead.position.y = -0.06;
+    tasselGroup.add(tasselBead);
+
+    const tasselMat = new THREE.MeshStandardMaterial({ color: 0xc8102e, roughness: 0.7 });
+    const tassel = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.09, 0.4, 8), tasselMat);
+    tassel.position.y = -0.3;
+    tasselGroup.add(tassel);
+    g.add(tasselGroup);
+
+    // 7. Ánh sáng: PointLight
+    const light = new THREE.PointLight(
+      l.lit ? 0xffb347 : 0xff3b14,
+      l.lit ? 3.8 : 0.6,
+      l.lit ? 16 : 8
+    );
+    light.position.y = 3.15;
     g.add(light);
 
+    // 8. Cột ánh sáng định vị từ xa (Beacon Beam)
+    const beaconGeo = new THREE.CylinderGeometry(0.12, 0.45, 14, 8, 1, true);
+    const beaconMat = new THREE.MeshBasicMaterial({
+      color: l.lit ? 0xffe58a : 0xff3b14,
+      transparent: true,
+      opacity: l.lit ? 0.35 : 0.22,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    const beacon = new THREE.Mesh(beaconGeo, beaconMat);
+    beacon.position.y = 10.5;
+    g.add(beacon);
+
+    // 9. Vòng an toàn dưới đất khi đèn sáng
     const safeRing = new THREE.Mesh(
       new THREE.RingGeometry(5.8, 6.0, 32),
-      new THREE.MeshBasicMaterial({ color: 0xffb347, side: THREE.DoubleSide, transparent: true, opacity: (l.lit && l.fuel >= 30) ? 0.35 : 0 })
+      new THREE.MeshBasicMaterial({
+        color: 0xffb347,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: (l.lit && l.fuel >= 30) ? 0.35 : 0
+      })
     );
     safeRing.rotation.x = -Math.PI / 2;
     safeRing.position.y = 0.03;
     g.add(safeRing);
 
-    // Fuel Bar Billboard above lantern
+    // 10. Thanh dầu (Fuel Bar) trên đỉnh lồng đèn
     const fuelBg = new THREE.Mesh(
       new THREE.PlaneGeometry(1.2, 0.15),
       new THREE.MeshBasicMaterial({ color: 0x1e293b, side: THREE.DoubleSide })
     );
-    fuelBg.position.set(0, 3.6, 0);
+    fuelBg.position.set(0, 4.65, 0);
 
     const fuelFill = new THREE.Mesh(
       new THREE.PlaneGeometry(1.16, 0.11),
       new THREE.MeshBasicMaterial({ color: 0xf2c14e, side: THREE.DoubleSide })
     );
-    fuelFill.position.set(0, 3.6, 0.01);
+    fuelFill.position.set(0, 4.65, 0.01);
     g.add(fuelBg);
     g.add(fuelFill);
 
     scene.add(g);
-    lanternMeshes.set(l.id, { group: g, head, light, safeRing, fuelBg, fuelFill });
+    lanternMeshes.set(l.id, {
+      group: g,
+      silk: lanternSilk,
+      roof,
+      tasselGroup,
+      light,
+      beacon,
+      safeRing,
+      fuelBg,
+      fuelFill
+    });
   }
 }
 
@@ -861,19 +980,31 @@ function animate(currentTime) {
   for (const l of engine.lanterns) {
     const lm = lanternMeshes.get(l.id);
     if (lm) {
+      // Đung đưa nhẹ dải tua rua lụa đỏ theo gió
+      lm.tasselGroup.rotation.z = Math.sin(Date.now() * 0.003 + l.pos[0]) * 0.12;
+
+      // Xoay thanh dầu luôn nhìn về phía camera
+      lm.fuelBg.quaternion.copy(camera.quaternion);
+      lm.fuelFill.quaternion.copy(camera.quaternion);
+
       if (l.lit) {
-        lm.head.material.color.setHex(0xffb347);
-        lm.head.material.emissive.setHex(0xffe58a);
-        lm.head.material.emissiveIntensity = 1.5;
-        lm.light.intensity = 3.5;
+        lm.silk.material.color.setHex(0xff9e1b);
+        lm.silk.material.emissive.setHex(0xffe58a);
+        lm.silk.material.emissiveIntensity = 2.2;
+        lm.beacon.material.color.setHex(0xffe58a);
+        lm.beacon.material.opacity = 0.35;
 
         // Blinking if low fuel (< 30)
         if (l.fuel < 30) {
           const blink = (Math.sin(Date.now() * 0.006) + 1) / 2;
+          lm.light.color.setHex(0xff5a5f);
           lm.light.intensity = 1.0 + 2.5 * blink;
           lm.safeRing.material.opacity = 0; // Lost safe zone
           lm.fuelFill.material.color.setHex(0xff5a5f); // Red fuel bar
+          lm.beacon.material.color.setHex(0xff5a5f);
         } else {
+          lm.light.color.setHex(0xffb347);
+          lm.light.intensity = 3.8;
           lm.safeRing.material.opacity = 0.35;
           lm.fuelFill.material.color.setHex(0xf2c14e);
         }
@@ -884,10 +1015,14 @@ function animate(currentTime) {
         lm.fuelFill.scale.set(scaleX, 1, 1);
         lm.fuelFill.position.x = -0.58 + (scaleX * 1.16) / 2;
       } else {
-        lm.head.material.color.setHex(0x5b5f6e);
-        lm.head.material.emissive.setHex(0x000000);
-        lm.head.material.emissiveIntensity = 0;
-        lm.light.intensity = 0;
+        // Đèn chưa thắp hoặc cạn dầu: than đỏ le lói và cột beacon đỏ cam dẫn đường
+        lm.silk.material.color.setHex(0x7c1e14);
+        lm.silk.material.emissive.setHex(0x3d0b06);
+        lm.silk.material.emissiveIntensity = 0.6;
+        lm.light.color.setHex(0xff3b14);
+        lm.light.intensity = 0.6 + 0.3 * Math.sin(Date.now() * 0.004);
+        lm.beacon.material.color.setHex(0xff3b14);
+        lm.beacon.material.opacity = 0.22;
         lm.safeRing.material.opacity = 0;
         lm.fuelBg.visible = false;
         lm.fuelFill.visible = false;

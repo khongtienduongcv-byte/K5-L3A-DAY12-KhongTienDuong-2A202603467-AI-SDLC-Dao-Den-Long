@@ -381,87 +381,418 @@
     #hud-settings-btn:hover {
       background: rgba(242, 193, 78, 0.2);
     }
+
+    /* Main Menu & Island Selector Styles */
+    .main-menu-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: radial-gradient(circle at center, rgba(14, 20, 48, 0.65) 0%, rgba(10, 14, 34, 0.94) 100%);
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 150;
+      color: #F5F1E6;
+    }
+    .main-menu-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 920px;
+      width: 92%;
+      text-align: center;
+    }
+    .main-logo-box {
+      margin-bottom: 20px;
+    }
+    .lantern-deco {
+      font-size: 42px;
+      filter: drop-shadow(0 0 16px rgba(242, 193, 78, 0.8));
+      animation: floatLantern 2.5s ease-in-out infinite alternate;
+    }
+    @keyframes floatLantern {
+      from { transform: translateY(0); }
+      to { transform: translateY(-7px); }
+    }
+    .main-title {
+      font-size: 44px;
+      font-weight: 900;
+      letter-spacing: 4px;
+      background: linear-gradient(135deg, #FFF1B8 0%, #F2C14E 50%, #FF9E2C 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 25px rgba(242, 193, 78, 0.4);
+      margin-top: 4px;
+    }
+    .main-subtitle {
+      font-size: 15px;
+      color: #CBD5E1;
+      margin-top: 6px;
+      letter-spacing: 0.8px;
+    }
+    .island-select-section {
+      width: 100%;
+      margin-bottom: 24px;
+    }
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #8FA3B8;
+      margin-bottom: 12px;
+    }
+    .island-cards-container {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .island-card {
+      background: rgba(24, 34, 75, 0.75);
+      border: 2px solid rgba(242, 193, 78, 0.25);
+      border-radius: 16px;
+      padding: 16px 14px;
+      width: 255px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      text-align: left;
+    }
+    .island-card:hover {
+      border-color: rgba(242, 193, 78, 0.8);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 28px rgba(242, 193, 78, 0.25);
+      background: rgba(30, 42, 90, 0.9);
+    }
+    .island-card.selected {
+      border: 2.5px solid #F2C14E;
+      background: rgba(35, 52, 110, 0.95);
+      box-shadow: 0 0 25px rgba(242, 193, 78, 0.5);
+      transform: translateY(-5px) scale(1.02);
+    }
+    .card-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 7px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+    .badge-easy { background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; }
+    .badge-medium { background: rgba(241, 196, 15, 0.2); color: #f1c40f; border: 1px solid #f1c40f; }
+    .badge-hard { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border: 1px solid #e74c3c; }
+    .card-icon {
+      font-size: 30px;
+      margin-bottom: 6px;
+    }
+    .card-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #FFE58A;
+      margin-bottom: 4px;
+    }
+    .card-info {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: #94A3B8;
+      margin-bottom: 8px;
+    }
+    .card-desc {
+      font-size: 12px;
+      color: #CBD5E1;
+      line-height: 1.45;
+    }
+    .menu-action-buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+    .btn-play {
+      background: linear-gradient(135deg, #F2C14E 0%, #FF9E2C 100%);
+      color: #120A1A;
+      font-size: 17px;
+      font-weight: 800;
+      padding: 13px 42px;
+      border-radius: 9999px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(242, 193, 78, 0.5);
+      letter-spacing: 1px;
+      transition: all 0.2s ease;
+    }
+    .btn-play:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 28px rgba(242, 193, 78, 0.7);
+    }
+    .menu-sub-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn-menu-action {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(242, 193, 78, 0.4);
+      color: #F5F1E6;
+      padding: 9px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .btn-menu-action:hover {
+      background: rgba(242, 193, 78, 0.2);
+      border-color: #F2C14E;
+      color: #FFE58A;
+      transform: translateY(-2px);
+    }
+    .menu-footer {
+      margin-top: 20px;
+      font-size: 11px;
+      color: #64748B;
+    }
+
+    /* Night Intro Modal Styles */
+    .intro-modal-box {
+      max-width: 580px;
+      border: 2px solid #F2C14E;
+    }
+    .intro-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid rgba(242, 193, 78, 0.3);
+      padding-bottom: 10px;
+    }
+    .intro-avatar {
+      font-size: 38px;
+      background: rgba(242, 193, 78, 0.2);
+      border-radius: 50%;
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid #F2C14E;
+    }
+    .intro-speaker {
+      font-size: 12px;
+      color: #8FA3B8;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .intro-island-name {
+      font-size: 21px;
+      font-weight: 800;
+      color: #FFE58A;
+    }
+    .intro-dialogue-text {
+      font-size: 14.5px;
+      font-style: italic;
+      color: #F5F1E6;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 14px 18px;
+      border-radius: 12px;
+      border-left: 4px solid #F2C14E;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .intro-goals-box {
+      background: rgba(14, 20, 48, 0.6);
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: left;
+    }
+    .goals-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: #F2C14E;
+      margin-bottom: 6px;
+      letter-spacing: 1px;
+    }
+    .goals-list {
+      padding-left: 20px;
+      font-size: 13px;
+      line-height: 1.65;
+      color: #CBD5E1;
+    }
+    .keybind-key {
+      background: rgba(255, 255, 255, 0.15);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+      color: #F2C14E;
+    }
   </style>
 </head>
 <body>
   <div id="game-container"></div>
 
-  <!-- HUD Top Left -->
-  <div id="hud-top-left">
-    <div style="font-size: 11px; color: #8FA3B8; text-transform: uppercase;">Ngọn Lửa</div>
-    <div id="flames-val" style="font-size: 20px; font-weight: 700;">🔥 🔥 🔥</div>
-  </div>
+  <!-- Main Menu Overlay -->
+  <div id="main-menu" class="main-menu-overlay">
+    <div class="main-menu-content">
+      <div class="main-logo-box">
+        <div class="lantern-deco">🏮</div>
+        <h1 class="main-title">ĐẢO ĐÈN LỒNG</h1>
+        <p class="main-subtitle">Hành trình thắp sáng đêm đen — Phong cách Dân gian Việt Nam</p>
+      </div>
 
-  <!-- HUD Top Center -->
-  <div id="hud-top-center">
-    <div id="night-title" style="font-size: 11px; text-transform: uppercase; color: #8FA3B8; margin-bottom: 2px;">Đêm 1 — Đảo Bến</div>
-    <div id="time-val">05:00</div>
-  </div>
+      <!-- Island Selection -->
+      <div class="island-select-section">
+        <h2 class="section-title">CHỌN ĐẢO ĐỂ BẮT ĐẦU</h2>
+        <div class="island-cards-container">
+          <!-- Island 1 -->
+          <div class="island-card selected" data-night="1" id="card-night-1">
+            <div class="card-badge badge-easy">Khởi Đầu</div>
+            <div class="card-icon">🏝️</div>
+            <div class="card-title">Đêm 1: Đảo Bến</div>
+            <div class="card-info">
+              <span>🏮 5 Đèn Lớn</span>
+              <span>⏱️ 300 Giây</span>
+            </div>
+            <div class="card-desc">Đảo tròn khởi nguyên yên ả. Thu thập đom đóm, thắp sáng các ngọn đèn và làm quen nhịp xua đuổi Bóng Mực.</div>
+          </div>
 
-  <!-- HUD Top Right -->
-  <div id="hud-top-right">
-    <div id="lanterns-val" style="font-size: 18px; font-weight: 700; color: #FFB347;">🏮 0 / 5</div>
-    <div id="score-val" style="font-size: 15px; color: #F2C14E; margin-top: 2px;">Điểm: 0</div>
-  </div>
+          <!-- Island 2 -->
+          <div class="island-card" data-night="2" id="card-night-2">
+            <div class="card-badge badge-medium">Thử Thách</div>
+            <div class="card-icon">🌴</div>
+            <div class="card-title">Đêm 2: Đảo Cau</div>
+            <div class="card-info">
+              <span>🏮 6 Đèn Lớn</span>
+              <span>⏱️ 330 Giây</span>
+            </div>
+            <div class="card-desc">Quần đảo đôi nối Cầu Tre & Bục Nhảy Phù Đổng. Đề phòng Gió Lạc lướt nhanh cướp mất đom đóm!</div>
+          </div>
 
-  <!-- Interact Hint -->
-  <div id="interact-hint">E — Nạp ánh sáng (<span id="interact-count">0</span>/10)</div>
+          <!-- Island 3 -->
+          <div class="island-card" data-night="3" id="card-night-3">
+            <div class="card-badge badge-hard">Cực Hạn</div>
+            <div class="card-icon">🔔</div>
+            <div class="card-title">Đêm 3: Đảo Chuông</div>
+            <div class="card-info">
+              <span>🏮 7 Đèn Lớn</span>
+              <span>⏱️ 360 Giây</span>
+            </div>
+            <div class="card-desc">Địa hình 3 tầng dốc đứng với Tháp Chuông cổ kính. Tìm Bùa Gió linh thiêng để đón ánh bình minh toàn diện!</div>
+          </div>
+        </div>
+      </div>
 
-  <!-- HUD Bottom Center: Mote Bar -->
-  <div id="hud-bottom-center">
-    <div style="font-size: 11px; color: #8FA3B8;">Túi Đom Đóm (<span id="motes-count">0</span>/10)</div>
-    <div class="mote-bar" id="mote-slots">
-      <div class="mote-slot"></div><div class="mote-slot"></div><div class="mote-slot"></div>
-      <div class="mote-slot"></div><div class="mote-slot"></div><div class="mote-slot"></div>
-      <div class="mote-slot"></div><div class="mote-slot"></div><div class="mote-slot"></div>
-      <div class="mote-slot"></div>
+      <!-- Action Buttons -->
+      <div class="menu-action-buttons">
+        <button id="start-game-btn" class="btn-play">▶ BẮT ĐẦU THẮP ĐÈN</button>
+        <div class="menu-sub-buttons">
+          <button id="menu-leaderboard-btn" class="btn-menu-action">🏆 Bảng Xếp Hạng</button>
+          <button id="menu-settings-btn" class="btn-menu-action">⚙️ Cài Đặt & Trợ Năng</button>
+          <button id="menu-howtoplay-btn" class="btn-menu-action">📖 Hướng Dẫn</button>
+        </div>
+      </div>
+
+      <div class="menu-footer">
+        Phiên bản v1.0.0 (Release) — Đảo Đèn Lồng (Day 12 AI SDLC) • Tác giả: Khổng Tiến Dương
+      </div>
     </div>
   </div>
 
-  <!-- HUD Bottom Right: Skill Badges -->
-  <div id="hud-bottom-right">
-    <div class="skill-badge">
-      <span id="dash-cd-ui">Sẵn sàng</span>
-      Shift: Lướt
+  <!-- HUD In-Game Layer -->
+  <div id="hud-layer" style="display: none;">
+    <!-- HUD Top Left -->
+    <div id="hud-top-left">
+      <div style="font-size: 11px; color: #8FA3B8; text-transform: uppercase;">Ngọn Lửa</div>
+      <div id="flames-val" style="font-size: 20px; font-weight: 700;">🔥 🔥 🔥</div>
     </div>
-    <div class="skill-badge">
-      <span id="pulse-cd-ui">Sẵn sàng</span>
-      Q/Space: Tỏa sáng (3 đom đóm)
+
+    <!-- HUD Top Center -->
+    <div id="hud-top-center">
+      <div id="night-title" style="font-size: 11px; text-transform: uppercase; color: #8FA3B8; margin-bottom: 2px;">Đêm 1 — Đảo Bến</div>
+      <div id="time-val">05:00</div>
     </div>
-    <div id="charm-badge" class="skill-badge" style="display: none; border-color: #C8102E; color: #FF5A5F;">
-      <span id="charm-cd-ui">Bùa Gió: 10s</span>
-      Tốc độ + Lướt hồi chiêu 0s
+
+    <!-- HUD Top Right -->
+    <div id="hud-top-right">
+      <div id="lanterns-val" style="font-size: 18px; font-weight: 700; color: #FFB347;">🏮 0 / 5</div>
+      <div id="score-val" style="font-size: 15px; color: #F2C14E; margin-top: 2px;">Điểm: 0</div>
     </div>
+
+    <!-- Interact Hint -->
+    <div id="interact-hint">E — Nạp ánh sáng (<span id="interact-count">0</span>/10)</div>
+
+    <!-- HUD Bottom Center: Mote Bar -->
+    <div id="hud-bottom-center">
+      <div style="font-size: 11px; color: #8FA3B8;">Túi Đom Đóm (<span id="motes-count">0</span>/10)</div>
+      <div class="mote-bar" id="mote-slots">
+        <div class="mote-slot"></div><div class="mote-slot"></div><div class="mote-slot"></div>
+        <div class="mote-slot"></div><div class="mote-slot"></div><div class="mote-slot"></div>
+        <div class="mote-slot"></div><div class="mote-slot"></div><div class="mote-slot"></div>
+        <div class="mote-slot"></div>
+      </div>
+    </div>
+
+    <!-- HUD Bottom Right: Skill Badges -->
+    <div id="hud-bottom-right">
+      <div class="skill-badge">
+        <span id="dash-cd-ui">Sẵn sàng</span>
+        Shift: Lướt
+      </div>
+      <div class="skill-badge">
+        <span id="pulse-cd-ui">Sẵn sàng</span>
+        Q/Space: Tỏa sáng (3 đom đóm)
+      </div>
+      <div id="charm-badge" class="skill-badge" style="display: none; border-color: #C8102E; color: #FF5A5F;">
+        <span id="charm-cd-ui">Bùa Gió: 10s</span>
+        Tốc độ + Lướt hồi chiêu 0s
+      </div>
+    </div>
+
+    <!-- HUD Settings & Leaderboard Button -->
+    <button id="hud-settings-btn" title="Cài đặt & Trợ năng">⚙️ Cài đặt & BXH</button>
+
+    <!-- Subtitle & Alert banner -->
+    <div id="subtitles-banner"></div>
+
+    <!-- Edge pointer container for off-screen entities -->
+    <div id="edge-pointer-container"></div>
+    <div id="controls-hint">
+      <span>WASD</span> Di chuyển &nbsp;|&nbsp; 
+      <span>Space</span> Nhảy &nbsp;|&nbsp; 
+      <span>Shift</span> Lướt &nbsp;|&nbsp; 
+      <span>E</span> Nạp đèn &nbsp;|&nbsp; 
+      <span>Q</span> Tỏa sáng &nbsp;|&nbsp;
+      <span>Esc</span> Tạm dừng
+    </div>
+
+    <div id="notification">Thông báo</div>
   </div>
-
-  <!-- HUD Settings & Leaderboard Button -->
-  <button id="hud-settings-btn" title="Cài đặt & Trợ năng">⚙️ Cài đặt & BXH</button>
-
-  <!-- Subtitle & Alert banner -->
-  <div id="subtitles-banner"></div>
-
-  <!-- Edge pointer container for off-screen entities -->
-  <div id="edge-pointer-container"></div>
-  <div id="controls-hint">
-    <span>WASD</span> Di chuyển &nbsp;|&nbsp; 
-    <span>Space</span> Nhảy &nbsp;|&nbsp; 
-    <span>Shift</span> Lướt &nbsp;|&nbsp; 
-    <span>E</span> Nạp đèn &nbsp;|&nbsp; 
-    <span>Q</span> Tỏa sáng &nbsp;|&nbsp;
-    <span>Esc</span> Tạm dừng
-  </div>
-
-  <div id="notification">Thông báo</div>
 
   <!-- Pause Overlay -->
   <div id="pause-overlay">
     <h1 style="font-size: 36px; margin-bottom: 16px; color: #F2C14E;">TẠM DỪNG</h1>
-    <button id="resume-btn" class="btn-primary">Tiếp tục (Phím Esc)</button>
-    <button id="restart-night-btn" class="btn-primary" style="background: rgba(255,255,255,0.1); color: #F5F1E6;">Chơi Lại Đêm Này</button>
+    <div style="display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; justify-content: center;">
+      <button id="resume-btn" class="btn-primary">Tiếp tục (Phím Esc)</button>
+      <button id="restart-night-btn" class="btn-primary" style="background: rgba(255,255,255,0.1); color: #F5F1E6;">Chơi Lại Đêm Này</button>
+      <button id="pause-settings-btn" class="btn-primary" style="background: rgba(255,255,255,0.1); color: #F5F1E6;">⚙️ Cài Đặt</button>
+      <button id="pause-menu-btn" class="btn-primary" style="background: rgba(200,16,46,0.3); border: 1px solid #FF5A5F; color: #FFF;">🏠 Về Menu Chính</button>
+    </div>
+    <div style="margin-top: 14px; font-size: 13px; color: #8FA3B8;">Chuyển nhanh sang Đảo khác:</div>
     <div class="night-select">
-      <button class="btn-night" data-night="1">Đêm 1</button>
-      <button class="btn-night" data-night="2">Đêm 2</button>
-      <button class="btn-night" data-night="3">Đêm 3</button>
+      <button class="btn-night" data-night="1">Đêm 1 — Đảo Bến</button>
+      <button class="btn-night" data-night="2">Đêm 2 — Đảo Cau</button>
+      <button class="btn-night" data-night="3">Đêm 3 — Đảo Chuông</button>
     </div>
   </div>
 
@@ -480,10 +811,92 @@
       <div id="save-score-msg" style="font-size: 12px; color: #8FA3B8;"></div>
     </div>
 
-    <div style="display: flex; gap: 12px;">
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
       <button id="next-night-btn" class="btn-primary" style="display: none;">Đêm Kế Tiếp</button>
       <button id="restart-btn" class="btn-primary">Chơi Lại (Phím R)</button>
       <button id="view-leaderboard-btn" class="btn-primary" style="background: rgba(255,255,255,0.1); color: #F5F1E6;">Xem BXH</button>
+      <button id="gameover-menu-btn" class="btn-primary" style="background: rgba(255,255,255,0.1); color: #F5F1E6;">🏠 Về Menu Chính</button>
+    </div>
+  </div>
+
+  <!-- Night Intro Modal (Lời dặn của Già Làng Ông Đăng) -->
+  <div id="night-intro-modal" class="modal-overlay">
+    <div class="modal-box intro-modal-box">
+      <div class="intro-header">
+        <div class="intro-avatar">👴</div>
+        <div>
+          <div class="intro-speaker">Lời Già Làng Ông Đăng dặn Mây:</div>
+          <div id="intro-night-name" class="intro-island-name">Đêm 1 — Đảo Bến</div>
+        </div>
+      </div>
+      <div id="intro-dialogue" class="intro-dialogue-text">
+        "Mây à, đêm buông xuống rồi. Hãy nhặt những đốm sáng đom đóm trong sương mù để thắp sáng 5 cột đèn lớn trên Đảo Bến. Cẩn thận Bóng Mực đang rình rập hút dầu đèn khi dầu cạn dưới 30!"
+      </div>
+      <div class="intro-goals-box">
+        <div class="goals-title">MỤC TIÊU ĐÊM NAY:</div>
+        <ul id="intro-goals-list" class="goals-list">
+          <li>🏮 Thắp sáng và giữ dầu cho ít nhất <strong>60%</strong> số đèn lồng khi hết giờ.</li>
+          <li>🔥 Bảo toàn 3 Ngọn Lửa, tránh để Bóng Mực tiếp cận khi ở ngoài vùng an toàn.</li>
+          <li>💨 Sử dụng Lướt (Shift) và Tỏa Sáng (Q) để đẩy lùi bóng tối.</li>
+        </ul>
+      </div>
+      <div style="display: flex; justify-content: center; margin-top: 20px; gap: 12px;">
+        <button id="start-night-confirm-btn" class="btn-play" style="font-size: 16px; padding: 12px 36px;">VÀO ĐÊM NGAY ▶</button>
+        <button id="back-to-menu-btn" class="btn-primary" style="background: rgba(255,255,255,0.15); color: #F5F1E6; padding: 12px 20px;">Quay Lại Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instructions Modal -->
+  <div id="instructions-modal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 680px;">
+      <div class="modal-title">📖 Hướng Dẫn Cách Chơi & Cơ Chế</div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px;">
+        <div style="background: rgba(255,255,255,0.05); padding: 14px; border-radius: 10px;">
+          <h4 style="color: #FFE58A; margin-bottom: 8px;">🎮 Phím Điều Khiển</h4>
+          <ul style="list-style: none; line-height: 1.8; font-size: 13px;">
+            <li><span class="keybind-key">W A S D</span> : Di chuyển Mây</li>
+            <li><span class="keybind-key">Space</span> : Nhảy vượt địa hình</li>
+            <li><span class="keybind-key">Shift</span> : Lướt nhanh (Dash)</li>
+            <li><span class="keybind-key">E</span> : Nạp / Thắp lại / Châm dầu đèn</li>
+            <li><span class="keybind-key">Q</span> : Tỏa sáng gây choáng (3 đom đóm)</li>
+            <li><span class="keybind-key">Esc / P</span> : Tạm dừng game</li>
+          </ul>
+        </div>
+        <div style="background: rgba(255,255,255,0.05); padding: 14px; border-radius: 10px;">
+          <h4 style="color: #FFE58A; margin-bottom: 8px;">🏮 Luật Đèn Lồng & Dầu</h4>
+          <p style="font-size: 13px; line-height: 1.6; color: #CBD5E1;">
+            • Cần <strong>10 đom đóm</strong> để thắp sáng lần đầu.<br/>
+            • Đèn tiêu hao tự nhiên <strong>1.0 dầu/giây</strong>.<br/>
+            • Đèn sáng tạo ra <strong>Vùng an toàn (Safe Zone 6m)</strong> xua đuổi Bóng Mực.<br/>
+            • Khi dầu &lt; 30, vùng an toàn biến mất, Bóng Mực tiếp cận hút 5 dầu/s.<br/>
+            • Đèn tắt thắp lại chỉ tốn <strong>5 đom đóm</strong>.
+          </p>
+        </div>
+      </div>
+
+      <div style="background: rgba(255,255,255,0.05); padding: 14px; border-radius: 10px; margin-bottom: 18px;">
+        <h4 style="color: #FFE58A; margin-bottom: 8px;">👾 Kẻ Địch & Bổ Trợ</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px; color: #CBD5E1;">
+          <div>
+            <strong style="color: #FF5A5F;">Bóng Mực:</strong> Quái vật bóng tối đuổi bắt Mây hoặc hút cạn dầu của đèn sắp tắt.
+          </div>
+          <div>
+            <strong style="color: #38BDF8;">Gió Lạc:</strong> Lướt tới cướp 3 đom đóm khi bạn mang ≥ 5 con. Dùng Tỏa Sáng (Q) để bắt nó đánh rơi lại!
+          </div>
+          <div>
+            <strong style="color: #F2C14E;">Bùa Gió:</strong> Tăng tốc chạy và Lướt 0s hồi chiêu trong 10 giây.
+          </div>
+          <div>
+            <strong style="color: #2DD4BF;">Bục Nhảy Phù Đổng:</strong> Chạm bục nhảy trên Đảo 2 & 3 để phóng vọt qua vực mây.
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end;">
+        <button id="close-instructions-btn" class="btn-primary" style="padding: 8px 24px;">Đã Hiểu</button>
+      </div>
     </div>
   </div>
 

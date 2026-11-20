@@ -29,6 +29,26 @@ const overlayStats = document.getElementById('overlay-stats');
 const restartBtn = document.getElementById('restart-btn');
 const nextNightBtn = document.getElementById('next-night-btn');
 
+// Main Menu & Island Selector DOM
+const hudLayer = document.getElementById('hud-layer');
+const mainMenu = document.getElementById('main-menu');
+const startGameBtn = document.getElementById('start-game-btn');
+const menuLeaderboardBtn = document.getElementById('menu-leaderboard-btn');
+const menuSettingsBtn = document.getElementById('menu-settings-btn');
+const menuHowtoplayBtn = document.getElementById('menu-howtoplay-btn');
+const pauseSettingsBtn = document.getElementById('pause-settings-btn');
+const pauseMenuBtn = document.getElementById('pause-menu-btn');
+const gameoverMenuBtn = document.getElementById('gameover-menu-btn');
+const nightIntroModal = document.getElementById('night-intro-modal');
+const introNightName = document.getElementById('intro-night-name');
+const introDialogue = document.getElementById('intro-dialogue');
+const introGoalsList = document.getElementById('intro-goals-list');
+const startNightConfirmBtn = document.getElementById('start-night-confirm-btn');
+const backToMenuBtn = document.getElementById('back-to-menu-btn');
+const instructionsModal = document.getElementById('instructions-modal');
+const closeInstructionsBtn = document.getElementById('close-instructions-btn');
+const islandCards = document.querySelectorAll('.island-card');
+
 // Phase 4 Accessibility & Leaderboard DOM
 const hudSettingsBtn = document.getElementById('hud-settings-btn');
 const subtitlesBanner = document.getElementById('subtitles-banner');
@@ -49,9 +69,41 @@ const saveScoreBtn = document.getElementById('save-score-btn');
 const saveScoreMsg = document.getElementById('save-score-msg');
 
 let currentNight = 1;
+let selectedNight = 1;
+let gameState = 'menu'; // 'menu' | 'playing'
 let colorblindMode = false;
 let reducedMotion = false;
 let largeFont = false;
+
+const NIGHT_INTROS = {
+  1: {
+    name: 'Đêm 1 — Đảo Bến',
+    dialogue: '"Mây à, đêm buông xuống rồi. Hãy nhặt những đốm sáng đom đóm trong sương mù để thắp sáng 5 cột đèn lớn trên Đảo Bến. Cẩn thận Bóng Mực đang rình rập hút dầu đèn khi dầu cạn dưới 30!"',
+    goals: [
+      '🏮 Thắp sáng và giữ dầu cho ít nhất <strong>3/5</strong> ngọn đèn khi hết giờ.',
+      '🔥 Bảo toàn 3 Ngọn Lửa, tránh để Bóng Mực cắn mất lửa và đom đóm.',
+      '💨 Sử dụng Lướt (Shift) và Tỏa Sáng (Q) để làm choáng quái vật khi bị bao vây.'
+    ]
+  },
+  2: {
+    name: 'Đêm 2 — Đảo Cau',
+    dialogue: '"Sóng gió đưa con đến Đảo Cau. Đảo này có hai bờ nối bằng Cầu Tre uốn lượn và các bục nhảy cổ xưa sẽ đẩy con vượt qua vực mây. Hãy dè chừng Gió Lạc lượn lờ cướp lấy đom đóm khi túi con đầy!"',
+    goals: [
+      '🏮 Thắp sáng và duy trì ít nhất <strong>4/6</strong> ngọn đèn trên cả hai bờ.',
+      '🌪️ Cẩn thận Gió Lạc cướp đom đóm — dùng Tỏa Sáng (Q) để bắt nó đánh rơi lại.',
+      '🚀 Sử dụng 2 Bục Nhảy Phù Đổng để bay nhanh qua lại giữa hai bờ.'
+    ]
+  },
+  3: {
+    name: 'Đêm 3 — Đảo Chuông',
+    dialogue: '"Đây là Đảo Chuông — thử thách cuối cùng trước bình minh! Địa hình ba tầng dốc đứng, gió giật thổi mạnh từng đợt. Hãy tìm Bùa Gió để lướt liên hoàn và giữ cho ít nhất 5/7 ngọn đèn rực sáng khi ánh bình minh đến!"',
+    goals: [
+      '🏮 Thắp sáng và giữ vững ít nhất <strong>5/7</strong> ngọn đèn trên cả 3 tầng độ cao.',
+      '🍃 Nhặt Bùa Gió linh thiêng để tăng tốc độ chạy và Lướt liên hoàn 0s hồi chiêu.',
+      '🌄 Cầm cự đến khi hết giờ (Bình Minh) để giành chiến thắng toàn diện!'
+    ]
+  }
+};
 
 // Subtitles Banner Manager
 let subtitleTimeout = null;
@@ -923,6 +975,30 @@ syncLanterns(engine.lanterns);
 // Initialize Settings & UI
 loadSettings();
 
+function selectIsland(night) {
+  selectedNight = night;
+  currentNight = night;
+  islandCards.forEach(card => {
+    if (parseInt(card.dataset.night, 10) === night) {
+      card.classList.add('selected');
+    } else {
+      card.classList.remove('selected');
+    }
+  });
+  buildIsland(night);
+  const tempEngine = new GameEngine({ night });
+  syncLanterns(tempEngine.lanterns);
+}
+
+function openNightIntro(night) {
+  selectedNight = night;
+  const info = NIGHT_INTROS[night] || NIGHT_INTROS[1];
+  if (introNightName) introNightName.innerText = info.name;
+  if (introDialogue) introDialogue.innerHTML = info.dialogue;
+  if (introGoalsList) introGoalsList.innerHTML = info.goals.map(g => `<li>${g}</li>`).join('');
+  if (nightIntroModal) nightIntroModal.style.display = 'flex';
+}
+
 // Input State
 const keys = {};
 let jumpRequested = false;
@@ -953,6 +1029,8 @@ window.addEventListener('keydown', (e) => {
   if (e.target && e.target.tagName === 'INPUT') {
     return;
   }
+
+  if (gameState !== 'playing') return;
 
   keys[e.code] = true;
 
@@ -1072,6 +1150,85 @@ if (saveScoreBtn) {
   });
 }
 
+// Main Menu Island Selection
+islandCards.forEach(card => {
+  card.addEventListener('click', () => {
+    const n = parseInt(card.dataset.night, 10);
+    selectIsland(n);
+  });
+});
+
+if (startGameBtn) {
+  startGameBtn.addEventListener('click', () => {
+    openNightIntro(selectedNight);
+  });
+}
+
+if (startNightConfirmBtn) {
+  startNightConfirmBtn.addEventListener('click', () => {
+    initNight(selectedNight);
+  });
+}
+
+if (backToMenuBtn) {
+  backToMenuBtn.addEventListener('click', () => {
+    if (nightIntroModal) nightIntroModal.style.display = 'none';
+  });
+}
+
+if (menuLeaderboardBtn) {
+  menuLeaderboardBtn.addEventListener('click', () => {
+    leaderboardModal.style.display = 'flex';
+    renderLeaderboard();
+  });
+}
+
+if (menuSettingsBtn) {
+  menuSettingsBtn.addEventListener('click', () => {
+    settingsModal.style.display = 'flex';
+    renderKeybindUI();
+  });
+}
+
+if (menuHowtoplayBtn) {
+  menuHowtoplayBtn.addEventListener('click', () => {
+    if (instructionsModal) instructionsModal.style.display = 'flex';
+  });
+}
+
+if (closeInstructionsBtn) {
+  closeInstructionsBtn.addEventListener('click', () => {
+    if (instructionsModal) instructionsModal.style.display = 'none';
+  });
+}
+
+if (pauseSettingsBtn) {
+  pauseSettingsBtn.addEventListener('click', () => {
+    settingsModal.style.display = 'flex';
+    renderKeybindUI();
+  });
+}
+
+if (pauseMenuBtn) {
+  pauseMenuBtn.addEventListener('click', () => {
+    pauseOverlay.style.display = 'none';
+    if (hudLayer) hudLayer.style.display = 'none';
+    if (mainMenu) mainMenu.style.display = 'flex';
+    gameState = 'menu';
+    selectIsland(currentNight);
+  });
+}
+
+if (gameoverMenuBtn) {
+  gameoverMenuBtn.addEventListener('click', () => {
+    overlay.style.display = 'none';
+    if (hudLayer) hudLayer.style.display = 'none';
+    if (mainMenu) mainMenu.style.display = 'flex';
+    gameState = 'menu';
+    selectIsland(currentNight);
+  });
+}
+
 resumeBtn.addEventListener('click', () => {
   pauseRequested = true;
 });
@@ -1088,7 +1245,9 @@ restartBtn.addEventListener('click', () => {
 nextNightBtn.addEventListener('click', () => {
   if (currentNight < 3) {
     currentNight += 1;
-    initNight(currentNight);
+    selectedNight = currentNight;
+    overlay.style.display = 'none';
+    openNightIntro(currentNight);
   }
 });
 
@@ -1102,13 +1261,21 @@ document.querySelectorAll('.btn-night').forEach((btn) => {
 
 function initNight(night) {
   currentNight = night;
+  selectedNight = night;
   overlay.style.display = 'none';
   pauseOverlay.style.display = 'none';
   nextNightBtn.style.display = 'none';
+  if (nightIntroModal) nightIntroModal.style.display = 'none';
+  if (mainMenu) mainMenu.style.display = 'none';
+  if (hudLayer) hudLayer.style.display = 'block';
+  gameState = 'playing';
 
   engine = new GameEngine({ night: currentNight });
   buildIsland(currentNight);
   syncLanterns(engine.lanterns);
+
+  camera.position.set(engine.player.pos[0], engine.player.pos[1] + 8, engine.player.pos[2] + 12);
+  camera.lookAt(engine.player.pos[0], engine.player.pos[1] + 1.2, engine.player.pos[2]);
 
   const titles = ['', 'Đêm 1 — Đảo Bến', 'Đêm 2 — Đảo Cau', 'Đêm 3 — Đảo Chuông'];
   nightTitle.innerText = titles[currentNight];
@@ -1158,6 +1325,25 @@ let lastMoveZ = 0;
 
 function animate(currentTime) {
   requestAnimationFrame(animate);
+
+  if (gameState === 'menu') {
+    lastTime = currentTime;
+    accumulator = 0;
+    const t = currentTime * 0.00035;
+    camera.position.x = Math.sin(t) * 58;
+    camera.position.z = Math.cos(t) * 58;
+    camera.position.y = 30;
+    camera.lookAt(0, 3, 0);
+
+    lanternMeshes.forEach(entry => {
+      if (entry && entry.halo) {
+        entry.halo.material.opacity = 0.4 + Math.sin(currentTime * 0.004) * 0.15;
+      }
+    });
+
+    renderer.render(scene, camera);
+    return;
+  }
 
   const delta = Math.min(currentTime - lastTime, 100);
   lastTime = currentTime;

@@ -5,28 +5,6 @@ import path from 'node:path';
 import { GameEngine } from '../core/engine.js';
 import { DEFAULT_TUNING } from '../core/constants.js';
 
-function loadTuning(contractPath = null) {
-  try {
-    const filePath = contractPath || path.resolve(process.cwd(), 'game.contract.json');
-    if (fs.existsSync(filePath)) {
-      const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-      if (data && data.tuning) {
-        return {
-          ...DEFAULT_TUNING,
-          ...data.tuning,
-          score: {
-            ...DEFAULT_TUNING.score,
-            ...(data.tuning.score || {})
-          }
-        };
-      }
-    }
-  } catch {
-    // fallback
-  }
-  return DEFAULT_TUNING;
-}
-
 function parseArgs(args) {
   const params = {
     seed: 42,
@@ -71,6 +49,28 @@ function loadJsonFile(filePath) {
   }
 }
 
+function loadTuning(contractPath = null) {
+  try {
+    const filePath = contractPath || path.resolve(process.cwd(), 'game.contract.json');
+    if (fs.existsSync(filePath)) {
+      const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      if (data && data.tuning) {
+        return {
+          ...DEFAULT_TUNING,
+          ...data.tuning,
+          score: {
+            ...DEFAULT_TUNING.score,
+            ...(data.tuning.score || {})
+          }
+        };
+      }
+    }
+  } catch {
+    // fallback
+  }
+  return DEFAULT_TUNING;
+}
+
 async function run() {
   const args = process.argv.slice(2);
   const params = parseArgs(args);
@@ -82,22 +82,23 @@ async function run() {
 
   const engine = new GameEngine({
     seed: params.seed,
+    night: params.night,
     tuning,
     scenario: scenarioData
   });
 
-  // Prepare inputs mapping
-  // frames: [{ tick: 0, move: [x, z], cam_yaw_deg: theta, interact: bool, pulse: bool }, ...]
   const inputFrames = inputsData?.frames || [];
   let currentInput = {
     move: [0, 0],
     cam_yaw_deg: 0,
+    jump: false,
+    dash: false,
     interact: false,
-    pulse: false
+    pulse: false,
+    pause: false
   };
 
   let frameIdx = 0;
-
   const outputLines = [];
 
   // Snapshot at tick 0
@@ -106,17 +107,20 @@ async function run() {
   // Simulation loop
   const totalTicks = params.ticks;
   for (let t = 0; t < totalTicks; t++) {
-    if (engine.state !== 'playing') {
+    if (engine.state === 'won' || engine.state === 'lost') {
       break;
     }
 
-    // Update input frame if match current tick
+    // Update input frame if matching current tick
     while (frameIdx < inputFrames.length && inputFrames[frameIdx].tick === t) {
       const frame = inputFrames[frameIdx];
       if (frame.move !== undefined) currentInput.move = frame.move;
       if (frame.cam_yaw_deg !== undefined) currentInput.cam_yaw_deg = frame.cam_yaw_deg;
+      if (frame.jump !== undefined) currentInput.jump = frame.jump;
+      if (frame.dash !== undefined) currentInput.dash = frame.dash;
       if (frame.interact !== undefined) currentInput.interact = frame.interact;
       if (frame.pulse !== undefined) currentInput.pulse = frame.pulse;
+      if (frame.pause !== undefined) currentInput.pause = frame.pause;
       frameIdx++;
     }
 

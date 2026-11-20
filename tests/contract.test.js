@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { GameEngine } from '../src/core/engine.js';
+import { sanitizeName, sortAndLimitEntries } from '../src/core/leaderboard.js';
+import { loadFileLeaderboard, saveFileLeaderboard, addFileEntry } from '../src/cli/leaderboard.js';
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -266,5 +268,73 @@ describe('Test Contract v1.2 & Phase 3 Core Rules', () => {
     } finally {
       if (fs.existsSync(badJsonPath)) fs.unlinkSync(badJsonPath);
     }
+  });
+
+  describe('Phase 4 (Ticket-04) & Test Contract v1.3 Verifications', () => {
+    it('should sanitize names to 3-12 alphanumeric characters', () => {
+      expect(sanitizeName('A')).toBe('A__');
+      expect(sanitizeName('May_Keeper_ExtraLongName')).toBe('May_Keeper_E');
+      expect(sanitizeName('Hero$#123')).toBe('Hero123');
+      expect(sanitizeName('Valid_Name_9')).toBe('Valid_Name_9');
+    });
+
+    it('should sort leaderboard by score desc, ties by date asc, and keep top 10', () => {
+      const sample = [
+        { name: 'P1', score: 100, achieved_at: '2026-11-20T10:05:00.000Z' },
+        { name: 'P2', score: 250, achieved_at: '2026-11-20T10:00:00.000Z' },
+        { name: 'P3', score: 100, achieved_at: '2026-11-20T10:01:00.000Z' },
+        { name: 'P4', score: 50, achieved_at: '2026-11-20T10:00:00.000Z' }
+      ];
+      const sorted = sortAndLimitEntries(sample, 3);
+      expect(sorted.length).toBe(3);
+      expect(sorted[0].name).toBe('P2'); // 250
+      expect(sorted[1].name).toBe('P3'); // 100 (earlier date 10:01 vs 10:05)
+      expect(sorted[2].name).toBe('P1'); // 100
+    });
+
+    it('should export leaderboard via CLI and headless flags', () => {
+      const outTemp = path.resolve(process.cwd(), 'temp_test_export.json');
+      try {
+        execSync(`node src/cli/leaderboard.js --export-leaderboard temp_test_export.json`, { stdio: 'pipe' });
+        expect(fs.existsSync(outTemp)).toBe(true);
+        const data = JSON.parse(fs.readFileSync(outTemp, 'utf-8'));
+        expect(Array.isArray(data.entries)).toBe(true);
+        expect(data.entries.length).toBeGreaterThanOrEqual(1);
+
+        // Also test headless export flag
+        fs.unlinkSync(outTemp);
+        execSync(`node src/cli/headless.js --export-leaderboard temp_test_export.json`, { stdio: 'pipe' });
+        expect(fs.existsSync(outTemp)).toBe(true);
+        const dataHeadless = JSON.parse(fs.readFileSync(outTemp, 'utf-8'));
+        expect(Array.isArray(dataHeadless.entries)).toBe(true);
+      } finally {
+        if (fs.existsSync(outTemp)) fs.unlinkSync(outTemp);
+      }
+    });
+
+    it('should have bench.json meeting Contract v1.3 performance thresholds', () => {
+      const benchPath = path.resolve(process.cwd(), 'bench.json');
+      expect(fs.existsSync(benchPath)).toBe(true);
+      const bench = JSON.parse(fs.readFileSync(benchPath, 'utf-8'));
+
+      expect(bench.contract_version).toBe('1.3');
+      expect(bench.avg_fps).toBeGreaterThanOrEqual(60);
+      expect(bench.p1_low_fps).toBeGreaterThanOrEqual(30);
+      expect(bench.load_ms).toBeLessThanOrEqual(10000);
+      expect(bench.frames).toBeGreaterThan(0);
+      expect(bench.peak_mem_mb).toBeGreaterThan(0);
+    });
+
+    it('should have soak.json meeting Contract v1.3 stability thresholds', () => {
+      const soakPath = path.resolve(process.cwd(), 'soak.json');
+      expect(fs.existsSync(soakPath)).toBe(true);
+      const soak = JSON.parse(fs.readFileSync(soakPath, 'utf-8'));
+
+      expect(soak.nights).toBe(10);
+      expect(soak.crashes).toBe(0);
+      expect(Array.isArray(soak.results)).toBe(true);
+      expect(soak.results.length).toBe(10);
+      expect(soak.mem_end_mb).toBeLessThanOrEqual(Math.round(1.2 * soak.mem_start_mb));
+    });
   });
 });

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GameEngine, round1 } from '../core/engine.js';
 import { DEFAULT_TUNING } from '../core/constants.js';
+import { getBrowserLeaderboard, addEntryToBrowser } from '../core/leaderboard.js';
 
 // DOM Elements
 const container = document.getElementById('game-container');
@@ -28,8 +29,116 @@ const overlayStats = document.getElementById('overlay-stats');
 const restartBtn = document.getElementById('restart-btn');
 const nextNightBtn = document.getElementById('next-night-btn');
 
+// Phase 4 Accessibility & Leaderboard DOM
+const hudSettingsBtn = document.getElementById('hud-settings-btn');
+const subtitlesBanner = document.getElementById('subtitles-banner');
+const edgePointerContainer = document.getElementById('edge-pointer-container');
+const settingsModal = document.getElementById('settings-modal');
+const closeSettingsBtn = document.getElementById('close-settings-btn');
+const resetKeysBtn = document.getElementById('reset-keys-btn');
+const keybindList = document.getElementById('keybind-list');
+const keybindError = document.getElementById('keybind-error');
+const reducedMotionCb = document.getElementById('reduced-motion-cb');
+const largeFontCb = document.getElementById('large-font-cb');
+const leaderboardModal = document.getElementById('leaderboard-modal');
+const closeLeaderboardBtn = document.getElementById('close-leaderboard-btn');
+const leaderboardBody = document.getElementById('leaderboard-body');
+const viewLeaderboardBtn = document.getElementById('view-leaderboard-btn');
+const playerNameInput = document.getElementById('player-name-input');
+const saveScoreBtn = document.getElementById('save-score-btn');
+const saveScoreMsg = document.getElementById('save-score-msg');
+
 let currentNight = 1;
 let colorblindMode = false;
+let reducedMotion = false;
+let largeFont = false;
+
+// Subtitles Banner Manager
+let subtitleTimeout = null;
+function showSubtitle(text, durationMs = 2800) {
+  if (!subtitlesBanner) return;
+  subtitlesBanner.innerText = text;
+  subtitlesBanner.style.display = 'block';
+  clearTimeout(subtitleTimeout);
+  subtitleTimeout = setTimeout(() => {
+    subtitlesBanner.style.display = 'none';
+  }, durationMs);
+}
+
+// Keybindings Manager
+const DEFAULT_KEYBINDS = {
+  moveUp: { label: 'Di chuyển Lên', keys: ['KeyW', 'ArrowUp'] },
+  moveDown: { label: 'Di chuyển Xuống', keys: ['KeyS', 'ArrowDown'] },
+  moveLeft: { label: 'Di chuyển Trái', keys: ['KeyA', 'ArrowLeft'] },
+  moveRight: { label: 'Di chuyển Phải', keys: ['KeyD', 'ArrowRight'] },
+  jump: { label: 'Nhảy', keys: ['Space'] },
+  dash: { label: 'Lướt', keys: ['ShiftLeft', 'KeyJ'] },
+  interact: { label: 'Nạp / Châm đèn', keys: ['KeyE'] },
+  pulse: { label: 'Tỏa sáng', keys: ['KeyQ'] },
+  pause: { label: 'Tạm dừng', keys: ['Escape', 'KeyP'] }
+};
+
+let currentKeybinds = JSON.parse(JSON.stringify(DEFAULT_KEYBINDS));
+
+function loadSettings() {
+  try {
+    const savedKeys = localStorage.getItem('dao_den_long_keybinds');
+    if (savedKeys) {
+      const parsed = JSON.parse(savedKeys);
+      for (const k in parsed) {
+        if (currentKeybinds[k]) currentKeybinds[k].keys = parsed[k].keys;
+      }
+    }
+    reducedMotion = localStorage.getItem('dao_den_long_reduced_motion') === 'true';
+    if (reducedMotionCb) reducedMotionCb.checked = reducedMotion;
+
+    largeFont = localStorage.getItem('dao_den_long_large_font') === 'true';
+    if (largeFontCb) largeFontCb.checked = largeFont;
+    if (largeFont) document.body.classList.add('large-font');
+  } catch {
+    // fallback
+  }
+}
+
+function saveKeybinds() {
+  try {
+    localStorage.setItem('dao_den_long_keybinds', JSON.stringify(currentKeybinds));
+  } catch {}
+}
+
+let listeningAction = null;
+function renderKeybindUI() {
+  if (!keybindList) return;
+  keybindList.innerHTML = '';
+  for (const [action, data] of Object.entries(currentKeybinds)) {
+    const row = document.createElement('div');
+    row.className = 'keybind-row';
+    const label = document.createElement('span');
+    label.innerText = data.label;
+
+    const btn = document.createElement('button');
+    btn.className = `keybind-btn ${listeningAction === action ? 'listening' : ''}`;
+    btn.innerText = listeningAction === action ? 'Nhấn phím...' : data.keys.map(k => k.replace(/^Key/, '')).join(' / ');
+    btn.onclick = () => {
+      listeningAction = listeningAction === action ? null : action;
+      keybindError.innerText = '';
+      renderKeybindUI();
+    };
+
+    row.appendChild(label);
+    row.appendChild(btn);
+    keybindList.appendChild(row);
+  }
+}
+
+function checkKeyConflict(newKey, targetAction) {
+  for (const [action, data] of Object.entries(currentKeybinds)) {
+    if (action !== targetAction && data.keys.includes(newKey)) {
+      return data.label;
+    }
+  }
+  return null;
+}
 
 let notifTimeout = null;
 function showNotif(text, isDanger = false) {
@@ -354,6 +463,9 @@ let engine = new GameEngine({ night: currentNight });
 buildIsland(currentNight);
 syncLanterns(engine.lanterns);
 
+// Initialize Settings & UI
+loadSettings();
+
 // Input State
 const keys = {};
 let jumpRequested = false;
@@ -361,14 +473,37 @@ let dashRequested = false;
 let interactRequested = false;
 let pulseRequested = false;
 let pauseRequested = false;
+let cameraShake = 0;
 
 window.addEventListener('keydown', (e) => {
+  // If user is rebinding a key
+  if (listeningAction) {
+    e.preventDefault();
+    const conflict = checkKeyConflict(e.code, listeningAction);
+    if (conflict) {
+      keybindError.innerText = `Phím "${e.code}" đã được gán cho: "${conflict}"! Vui lòng chọn phím khác.`;
+      return;
+    }
+    currentKeybinds[listeningAction].keys = [e.code];
+    saveKeybinds();
+    listeningAction = null;
+    keybindError.innerText = '';
+    renderKeybindUI();
+    return;
+  }
+
+  // If typing in input box, ignore game hotkeys
+  if (e.target && e.target.tagName === 'INPUT') {
+    return;
+  }
+
   keys[e.code] = true;
-  if (e.code === 'Space') jumpRequested = true;
-  if (e.code === 'ShiftLeft' || e.code === 'KeyJ') dashRequested = true;
-  if (e.code === 'KeyE') interactRequested = true;
-  if (e.code === 'KeyQ') pulseRequested = true;
-  if (e.code === 'Escape' || e.code === 'KeyP') pauseRequested = true;
+
+  if (currentKeybinds.jump.keys.includes(e.code)) jumpRequested = true;
+  if (currentKeybinds.dash.keys.includes(e.code)) dashRequested = true;
+  if (currentKeybinds.interact.keys.includes(e.code)) interactRequested = true;
+  if (currentKeybinds.pulse.keys.includes(e.code)) pulseRequested = true;
+  if (currentKeybinds.pause.keys.includes(e.code)) pauseRequested = true;
   if (e.code === 'KeyR' && (engine.state === 'won' || engine.state === 'lost')) {
     initNight(currentNight);
   }
@@ -377,6 +512,108 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('keyup', (e) => {
   keys[e.code] = false;
 });
+
+// Settings & Accessibility Listeners
+if (hudSettingsBtn) {
+  hudSettingsBtn.addEventListener('click', () => {
+    settingsModal.style.display = 'flex';
+    renderKeybindUI();
+  });
+}
+
+if (closeSettingsBtn) {
+  closeSettingsBtn.addEventListener('click', () => {
+    settingsModal.style.display = 'none';
+    listeningAction = null;
+  });
+}
+
+if (resetKeysBtn) {
+  resetKeysBtn.addEventListener('click', () => {
+    currentKeybinds = JSON.parse(JSON.stringify(DEFAULT_KEYBINDS));
+    saveKeybinds();
+    renderKeybindUI();
+    keybindError.innerText = 'Đã khôi phục phím mặc định!';
+  });
+}
+
+if (reducedMotionCb) {
+  reducedMotionCb.addEventListener('change', (e) => {
+    reducedMotion = e.target.checked;
+    localStorage.setItem('dao_den_long_reduced_motion', String(reducedMotion));
+  });
+}
+
+if (largeFontCb) {
+  largeFontCb.addEventListener('change', (e) => {
+    largeFont = e.target.checked;
+    localStorage.setItem('dao_den_long_large_font', String(largeFont));
+    if (largeFont) {
+      document.body.classList.add('large-font');
+    } else {
+      document.body.classList.remove('large-font');
+    }
+  });
+}
+
+// Leaderboard Modal & Saving Listeners
+function renderLeaderboard() {
+  if (!leaderboardBody) return;
+  const entries = getBrowserLeaderboard();
+  leaderboardBody.innerHTML = '';
+  if (entries.length === 0) {
+    leaderboardBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#8FA3B8;">Chưa có dữ liệu xếp hạng</td></tr>';
+    return;
+  }
+  entries.forEach((entry, idx) => {
+    const tr = document.createElement('tr');
+    const dateStr = new Date(entry.achieved_at).toLocaleDateString('vi-VN');
+    tr.innerHTML = `
+      <td>#${idx + 1}</td>
+      <td>${entry.name}</td>
+      <td><strong>${entry.score}</strong></td>
+      <td>${entry.nights_won}/3</td>
+      <td>${dateStr}</td>
+    `;
+    leaderboardBody.appendChild(tr);
+  });
+}
+
+if (viewLeaderboardBtn) {
+  viewLeaderboardBtn.addEventListener('click', () => {
+    leaderboardModal.style.display = 'flex';
+    renderLeaderboard();
+  });
+}
+
+if (closeLeaderboardBtn) {
+  closeLeaderboardBtn.addEventListener('click', () => {
+    leaderboardModal.style.display = 'none';
+  });
+}
+
+if (saveScoreBtn) {
+  saveScoreBtn.addEventListener('click', () => {
+    const rawName = (playerNameInput.value || '').trim();
+    if (!/^[A-Za-z0-9_]{3,12}$/.test(rawName)) {
+      saveScoreMsg.style.color = '#FF5A5F';
+      saveScoreMsg.innerText = 'Tên phải từ 3-12 ký tự [A-Za-z0-9_]!';
+      return;
+    }
+    const nightsWon = engine.state === 'won' ? currentNight : (currentNight - 1);
+    addEntryToBrowser({
+      name: rawName,
+      score: engine.score,
+      nights_won: nightsWon,
+      seed: engine.seed,
+      achieved_at: new Date().toISOString()
+    });
+    saveScoreMsg.style.color = '#FFE58A';
+    saveScoreMsg.innerText = 'Đã lưu điểm thành công!';
+    saveScoreBtn.disabled = true;
+    renderLeaderboard();
+  });
+}
 
 resumeBtn.addEventListener('click', () => {
   pauseRequested = true;
@@ -421,6 +658,40 @@ function initNight(night) {
   showNotif(`${titles[currentNight]} bắt đầu!`);
 }
 
+// Edge pointer calculation for offscreen Shades
+function updateEdgePointers(shades) {
+  if (!edgePointerContainer) return;
+  edgePointerContainer.innerHTML = '';
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const cx = width / 2;
+  const cy = height / 2;
+
+  for (const s of shades) {
+    const v = new THREE.Vector3(s.pos[0], s.pos[1] + 0.5, s.pos[2]);
+    v.project(camera);
+
+    const isBehind = v.z > 1 || v.z < -1;
+    let sx = (v.x * 0.5 + 0.5) * width;
+    let sy = (-(v.y * 0.5) + 0.5) * height;
+
+    if (isBehind || sx < 40 || sx > width - 40 || sy < 40 || sy > height - 40) {
+      let dx = isBehind ? -v.x : v.x;
+      let dy = isBehind ? v.y : -v.y;
+      const angle = Math.atan2(dy, dx);
+      const edgeX = Math.max(30, Math.min(width - 30, cx + Math.cos(angle) * (cx - 45)));
+      const edgeY = Math.max(30, Math.min(height - 30, cy + Math.sin(angle) * (cy - 45)));
+
+      const pointer = document.createElement('div');
+      pointer.className = 'edge-pointer';
+      pointer.style.left = `${edgeX - 10}px`;
+      pointer.style.top = `${edgeY - 20}px`;
+      pointer.style.transform = `rotate(${angle + Math.PI / 2}rad)`;
+      edgePointerContainer.appendChild(pointer);
+    }
+  }
+}
+
 // Loop
 let lastTime = performance.now();
 let accumulator = 0;
@@ -440,10 +711,10 @@ function animate(currentTime) {
 
     let moveX = 0;
     let moveZ = 0;
-    if (keys['KeyW'] || keys['ArrowUp']) moveZ += 1;
-    if (keys['KeyS'] || keys['ArrowDown']) moveZ -= 1;
-    if (keys['KeyA'] || keys['ArrowLeft']) moveX += 1;
-    if (keys['KeyD'] || keys['ArrowRight']) moveX -= 1;
+    if (currentKeybinds.moveUp.keys.some(k => keys[k])) moveZ += 1;
+    if (currentKeybinds.moveDown.keys.some(k => keys[k])) moveZ -= 1;
+    if (currentKeybinds.moveLeft.keys.some(k => keys[k])) moveX += 1;
+    if (currentKeybinds.moveRight.keys.some(k => keys[k])) moveX -= 1;
 
     if (moveX !== 0 || moveZ !== 0) {
       lastMoveX = moveX;
@@ -494,17 +765,26 @@ function animate(currentTime) {
       } else if (evt.name === 'drifter_drop') {
         showNotif(`Tỏa sáng khiến Gió Lạc đánh rơi ${evt.data.amount} đom đóm!`);
       } else if (evt.name === 'player_hit') {
+        if (!reducedMotion) cameraShake = 0.5;
         if (evt.data.by === 'fall') {
           showNotif('Rơi khỏi đảo! Mất 1 ngọn lửa và toàn bộ đom đóm', true);
         } else {
           showNotif(`Bị Bóng Mực cắn! Mất 1 ngọn lửa, rơi ${evt.data.dropped} đom đóm`, true);
         }
+      } else if (evt.name === 'shade_spawned') {
+        showSubtitle('Bóng Mực xuất hiện!');
+      } else if (evt.name === 'wind_gust') {
+        showSubtitle('Gió sắp thổi mạnh!');
       } else if (evt.name === 'paused') {
         pauseOverlay.style.display = 'flex';
       } else if (evt.name === 'resumed') {
         pauseOverlay.style.display = 'none';
       } else if (evt.name === 'game_over') {
         overlay.style.display = 'flex';
+        if (saveScoreBtn) {
+          saveScoreBtn.disabled = false;
+          saveScoreMsg.innerText = '';
+        }
         if (evt.data.result === 'won') {
           overlayTitle.innerText = currentNight === 3 ? 'BÌNH MINH TOÀN DIỆN!' : 'VƯỢT QUA ĐÊM (BÌNH MINH)!';
           overlayTitle.style.color = '#F2C14E';
@@ -524,6 +804,17 @@ function animate(currentTime) {
         `;
       }
     }
+
+    // Periodic accessibility warnings
+    if (Math.floor(engine.time_left_s) === 10 && engine.tick % 60 === 0) {
+      showSubtitle('10 giây cuối! Bình minh sắp đến!');
+    }
+    if (engine.tick % 180 === 0) {
+      const low = engine.lanterns.find(l => l.lit && l.fuel < 30);
+      if (low) {
+        showSubtitle(`Cảnh báo: Đèn ${low.id} cạn dầu (<30%)!`);
+      }
+    }
   }
 
   // Visual position updates
@@ -541,6 +832,13 @@ function animate(currentTime) {
   camera.position.x += (targetCamX - camera.position.x) * 0.1;
   camera.position.y += (targetCamY - camera.position.y) * 0.1;
   camera.position.z += (targetCamZ - camera.position.z) * 0.1;
+
+  if (!reducedMotion && cameraShake > 0) {
+    camera.position.x += (Math.random() - 0.5) * cameraShake;
+    camera.position.y += (Math.random() - 0.5) * cameraShake;
+    cameraShake = Math.max(0, cameraShake - 0.04);
+  }
+
   camera.lookAt(engine.player.pos[0], engine.player.pos[1] + 1.0, engine.player.pos[2]);
 
   // Pulse animation
@@ -668,6 +966,9 @@ function animate(currentTime) {
   } else {
     charmBadge.style.display = 'none';
   }
+
+  // Update edge screen pointers
+  updateEdgePointers(engine.shades);
 
   renderer.render(scene, camera);
 }

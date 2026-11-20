@@ -8,7 +8,10 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "headless": "node src/cli/headless.js"
+    "headless": "node src/cli/headless.js",
+    "bench": "node src/cli/bench.js",
+    "soak": "node src/cli/soak.js",
+    "export-leaderboard": "node src/cli/leaderboard.js --export-leaderboard"
   },
   "dependencies": {
     "three": "^0.170.0"

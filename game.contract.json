@@ -1,9 +1,11 @@
 {
-  "contract_version": "1.2",
+  "contract_version": "1.3",
   "team": "khongtienduongcv-byte",
   "build_cmd": "npm install && npm run build",
   "run_cmd": "npm run dev",
   "headless_cmd": "node src/cli/headless.js",
+  "bench_cmd": "node src/cli/bench.js",
+  "soak_cmd": "node src/cli/soak.js",
   "tuning": {
     "player_speed": 6.0,
     "dash_speed": 14.0,

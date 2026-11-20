@@ -222,6 +222,165 @@
       transition: opacity 0.3s ease;
       pointer-events: none;
     }
+    /* Accessibility & Font Size */
+    body.large-font {
+      font-size: 20px;
+    }
+    body.large-font #controls-hint,
+    body.large-font .skill-badge {
+      font-size: 15px;
+    }
+    body.large-font #hud-top-center {
+      font-size: 30px;
+    }
+    body.large-font #flames-val,
+    body.large-font #lanterns-val {
+      font-size: 24px;
+    }
+
+    /* Subtitle & Alert banner */
+    #subtitles-banner {
+      position: absolute;
+      bottom: 84px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 50;
+      background: rgba(14, 20, 48, 0.9);
+      border: 1px solid #FFE58A;
+      color: #FFE58A;
+      padding: 6px 20px;
+      border-radius: 20px;
+      font-size: 15px;
+      font-weight: 600;
+      display: none;
+      pointer-events: none;
+      box-shadow: 0 0 12px rgba(242, 193, 78, 0.4);
+      animation: subtitleFade 0.3s ease;
+    }
+    @keyframes subtitleFade {
+      from { opacity: 0; transform: translate(-50%, 10px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+
+    /* Edge direction pointer for Shades */
+    #edge-pointer-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 40;
+      overflow: hidden;
+    }
+    .edge-pointer {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-bottom: 20px solid #C8102E;
+      filter: drop-shadow(0 0 6px #FF5A5F);
+      transform-origin: center bottom;
+      transition: opacity 0.2s;
+    }
+
+    /* Settings & Leaderboard Modals */
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(14, 20, 48, 0.92);
+      backdrop-filter: blur(12px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+    .modal-box {
+      background: #18224B;
+      border: 1.5px solid rgba(242, 193, 78, 0.4);
+      border-radius: 16px;
+      padding: 24px 32px;
+      max-width: 600px;
+      width: 90%;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+    .modal-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #F2C14E;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .keybind-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .keybind-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(242, 193, 78, 0.4);
+      color: #FFE58A;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 700;
+      min-width: 70px;
+      text-align: center;
+    }
+    .keybind-btn.listening {
+      background: #C8102E;
+      border-color: #FF5A5F;
+      color: #FFF;
+      animation: pulse 0.5s infinite alternate;
+    }
+    .table-leaderboard {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+    .table-leaderboard th, .table-leaderboard td {
+      padding: 8px 12px;
+      text-align: left;
+      font-size: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .table-leaderboard th {
+      color: #F2C14E;
+      font-weight: 700;
+    }
+    .table-leaderboard tr:nth-child(1) td { color: #FFE58A; font-weight: 700; }
+    .table-leaderboard tr:nth-child(2) td { color: #E0E0E0; font-weight: 600; }
+    .table-leaderboard tr:nth-child(3) td { color: #CD7F32; font-weight: 600; }
+
+    #hud-settings-btn {
+      position: absolute;
+      top: 20px;
+      right: 170px;
+      z-index: 10;
+      background: rgba(14, 20, 48, 0.75);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(242, 193, 78, 0.3);
+      border-radius: 12px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #F5F1E6;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    #hud-settings-btn:hover {
+      background: rgba(242, 193, 78, 0.2);
+    }
   </style>
 </head>
 <body>
@@ -275,7 +434,14 @@
     </div>
   </div>
 
-  <!-- Controls Hint -->
+  <!-- HUD Settings & Leaderboard Button -->
+  <button id="hud-settings-btn" title="Cài đặt & Trợ năng">⚙️ Cài đặt & BXH</button>
+
+  <!-- Subtitle & Alert banner -->
+  <div id="subtitles-banner"></div>
+
+  <!-- Edge pointer container for off-screen entities -->
+  <div id="edge-pointer-container"></div>
   <div id="controls-hint">
     <span>WASD</span> Di chuyển &nbsp;|&nbsp; 
     <span>Space</span> Nhảy &nbsp;|&nbsp; 
@@ -304,9 +470,76 @@
     <h1 id="overlay-title" style="font-size: 42px; margin-bottom: 12px;">CHIẾN THẮNG!</h1>
     <p id="overlay-desc" style="font-size: 16px; color: #8FA3B8; margin-bottom: 20px;"></p>
     <div style="background: rgba(255,255,255,0.05); padding: 16px 32px; border-radius: 12px; margin-bottom: 24px; text-align: center; line-height: 1.8;" id="overlay-stats"></div>
+    <!-- Leaderboard Form on Game Over / Victory -->
+    <div id="leaderboard-form-box" style="margin-bottom: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+      <div style="font-size: 14px; color: #FFE58A;">Ghi danh Bảng Xếp Hạng:</div>
+      <div style="display: flex; gap: 8px;">
+        <input id="player-name-input" type="text" maxlength="12" placeholder="Tên (3-12 ký tự)" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #F2C14E; background: #0E1430; color: #FFF; font-weight: 600; outline: none;" value="May_Keeper" />
+        <button id="save-score-btn" class="btn-primary" style="padding: 8px 18px; margin: 0; font-size: 14px;">Lưu Điểm</button>
+      </div>
+      <div id="save-score-msg" style="font-size: 12px; color: #8FA3B8;"></div>
+    </div>
+
     <div style="display: flex; gap: 12px;">
       <button id="next-night-btn" class="btn-primary" style="display: none;">Đêm Kế Tiếp</button>
       <button id="restart-btn" class="btn-primary">Chơi Lại (Phím R)</button>
+      <button id="view-leaderboard-btn" class="btn-primary" style="background: rgba(255,255,255,0.1); color: #F5F1E6;">Xem BXH</button>
+    </div>
+  </div>
+
+  <!-- Settings & Accessibility Modal -->
+  <div id="settings-modal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-title">⚙️ Cài Đặt & Trợ Năng (Accessibility)</div>
+      
+      <div style="margin-bottom: 16px;">
+        <h3 style="font-size: 16px; color: #FFE58A; margin-bottom: 8px; border-bottom: 1px solid rgba(242,193,78,0.2); padding-bottom: 4px;">Đổi Phím Điều Khiển</h3>
+        <div id="keybind-list">
+          <!-- Dynamically populated or static rows -->
+        </div>
+        <div id="keybind-error" style="color: #FF5A5F; font-size: 12px; margin-top: 6px; min-height: 16px;"></div>
+        <button id="reset-keys-btn" style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #8FA3B8; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-top: 6px;">Khôi phục phím mặc định</button>
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <h3 style="font-size: 16px; color: #FFE58A; margin-bottom: 8px; border-bottom: 1px solid rgba(242,193,78,0.2); padding-bottom: 4px;">Tùy Chọn Hiển Thị & Trợ Năng</h3>
+        <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; cursor: pointer; font-size: 14px;">
+          <input type="checkbox" id="reduced-motion-cb" style="width: 18px; height: 18px;" />
+          <span><strong>Giảm chuyển động (Reduced Motion):</strong> Tắt rung camera và chớp màn hình</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px;">
+          <input type="checkbox" id="large-font-cb" style="width: 18px; height: 18px;" />
+          <span><strong>Cỡ chữ lớn (Large Font x1.25):</strong> Tăng kích thước phông chữ toàn bộ giao diện</span>
+        </label>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+        <button id="close-settings-btn" class="btn-primary" style="padding: 8px 24px;">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard Modal -->
+  <div id="leaderboard-modal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-title">🏆 Bảng Xếp Hạng (Top 10)</div>
+      <table class="table-leaderboard">
+        <thead>
+          <tr>
+            <th>Hạng</th>
+            <th>Tên</th>
+            <th>Điểm</th>
+            <th>Đêm Thắng</th>
+            <th>Thời Gian</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboard-body">
+          <!-- Filled by JS -->
+        </tbody>
+      </table>
+      <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+        <button id="close-leaderboard-btn" class="btn-primary" style="padding: 8px 24px;">Đóng</button>
+      </div>
     </div>
   </div>
 

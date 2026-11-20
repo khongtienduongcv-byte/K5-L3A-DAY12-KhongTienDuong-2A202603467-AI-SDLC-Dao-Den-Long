@@ -4,7 +4,7 @@ export function getMapData(night = 1) {
   if (night === 2) {
     return {
       night: 2,
-      duration_s: 330,
+      duration_s: 270,
       start_pos: [0, 0, 0],
       lanterns: [
         { id: 'L1', pos: [0, 0, 20] },
@@ -27,7 +27,7 @@ export function getMapData(night = 1) {
   if (night === 3) {
     return {
       night: 3,
-      duration_s: 360,
+      duration_s: 300,
       start_pos: [0, 0, 0],
       lanterns: [
         { id: 'L1', pos: [0, 6, 6] },
@@ -51,7 +51,7 @@ export function getMapData(night = 1) {
   // Night 1 Default
   return {
     night: 1,
-    duration_s: 300,
+    duration_s: 240,
     start_pos: [0, 0, 0],
     lanterns: [
       { id: 'L1', pos: [0, 0, 25] },

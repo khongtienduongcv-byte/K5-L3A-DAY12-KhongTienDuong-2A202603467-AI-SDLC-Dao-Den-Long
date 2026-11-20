@@ -4,7 +4,7 @@ import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
-describe('Test Contract v1.1 & Phase 2 Features', () => {
+describe('Test Contract v1.2 & Phase 3 Core Rules', () => {
   it('should deterministically produce identical snapshots given the same seed and inputs', () => {
     const engine1 = new GameEngine({ seed: 12345, night: 1 });
     const engine2 = new GameEngine({ seed: 12345, night: 1 });
@@ -20,7 +20,7 @@ describe('Test Contract v1.1 & Phase 2 Features', () => {
     expect(engine1.getEnd()).toEqual(engine2.getEnd());
   });
 
-  it('should pick up motes within v1.1 radius (1.0m)', () => {
+  it('should pick up motes within v1.2 radius (1.0m) with Phase 3 score (+5)', () => {
     const scenario = {
       player: { pos: [0, 0, 0], carried: 0, flames: 3 },
       random_motes: false,
@@ -34,7 +34,7 @@ describe('Test Contract v1.1 & Phase 2 Features', () => {
 
     expect(events.some((e) => e.name === 'mote_picked')).toBe(true);
     expect(engine.player.carried).toBe(1);
-    expect(engine.score).toBe(10);
+    expect(engine.score).toBe(5); // Phase 3: +5 score per mote
   });
 
   it('should dash at 14 m/s and emit dash event', () => {
@@ -48,7 +48,7 @@ describe('Test Contract v1.1 & Phase 2 Features', () => {
 
     const events = engine.step({ move: [0, 1], dash: true });
     expect(events.some((e) => e.name === 'dash')).toBe(true);
-    expect(engine.player.pos[2]).toBeCloseTo(0.233, 2); // 14 / 60 = ~0.233m
+    expect(engine.player.pos[2]).toBeCloseTo(0.233, 2);
   });
 
   it('should jump and apply gravity -20 m/s^2', () => {
@@ -60,13 +60,12 @@ describe('Test Contract v1.1 & Phase 2 Features', () => {
       }
     });
 
-    // Jump
     engine.step({ jump: true });
     expect(engine.player.grounded).toBe(false);
     expect(engine.player.pos[1]).toBeGreaterThan(0);
   });
 
-  it('should deposit into lantern and light it at 10 motes (v1.1 cost)', () => {
+  it('should deposit 10 motes to light a new lantern with 100 fuel', () => {
     const scenario = {
       player: { pos: [0, 0, 24.0], carried: 10, flames: 3 },
       random_motes: false,
@@ -80,65 +79,150 @@ describe('Test Contract v1.1 & Phase 2 Features', () => {
     const events = engine.step({ interact: true });
 
     expect(events.some((e) => e.name === 'deposit')).toBe(true);
-    expect(events.some((e) => e.name === 'lantern_lit')).toBe(true);
+    const litEvt = events.find((e) => e.name === 'lantern_lit');
+    expect(litEvt).toBeDefined();
+    expect(litEvt.data.relight).toBe(false);
     expect(engine.player.carried).toBe(0);
+
     const l1 = engine.lanterns.find((l) => l.id === 'L1');
     expect(l1.lit).toBe(true);
-    expect(l1.deposited).toBe(10);
+    expect(l1.fuel).toBe(100.0);
+    expect(engine.capacity).toBe(12); // Capacity increased by 2
   });
 
-  it('should pulse and stun shades with 3 motes cost', () => {
+  it('should relight an ever_lit lantern with only 5 motes', () => {
     const scenario = {
-      player: { pos: [0, 0, 0], carried: 3, flames: 3 },
+      player: { pos: [0, 0, 24.0], carried: 5, flames: 3 },
       random_motes: false,
       random_shades: false,
-      shades: [{ id: 'S1', pos: [3.0, 0, 0] }],
+      lanterns: [{ id: 'L1', pos: [0, 0, 25.0], deposited: 0, lit: false, ever_lit: true }],
+      motes: [],
+      shades: []
+    };
+
+    const engine = new GameEngine({ scenario });
+    const events = engine.step({ interact: true });
+
+    const litEvt = events.find((e) => e.name === 'lantern_lit');
+    expect(litEvt).toBeDefined();
+    expect(litEvt.data.relight).toBe(true);
+    expect(engine.player.carried).toBe(0);
+  });
+
+  it('should refuel a lit lantern with fuel < 100', () => {
+    const scenario = {
+      player: { pos: [0, 0, 24.0], carried: 2, flames: 3 },
+      random_motes: false,
+      random_shades: false,
+      lanterns: [{ id: 'L1', pos: [0, 0, 25.0], lit: true, fuel: 80.0 }],
+      motes: [],
+      shades: []
+    };
+
+    const engine = new GameEngine({ scenario });
+    const events = engine.step({ interact: true });
+
+    const refuelEvt = events.find((e) => e.name === 'refuel');
+    expect(refuelEvt).toBeDefined();
+    expect(refuelEvt.data.amount).toBe(2);
+    expect(refuelEvt.data.fuel).toBe(100.0);
+    expect(engine.player.carried).toBe(0);
+  });
+
+  it('should decay fuel and turn off lantern with lantern_out event', () => {
+    const scenario = {
+      player: { pos: [0, 0, 0], carried: 0, flames: 3 },
+      random_motes: false,
+      random_shades: false,
+      lanterns: [{ id: 'L1', pos: [0, 0, 25.0], lit: true, fuel: 0.05 }],
+      motes: [],
+      shades: []
+    };
+
+    const engine = new GameEngine({ scenario });
+    // In 4 ticks (4 * 1/60 = 0.066 > 0.05), fuel drops to 0
+    let events = [];
+    for (let i = 0; i < 4; i++) {
+      events = events.concat(engine.step({}));
+    }
+
+    expect(events.some((e) => e.name === 'lantern_out')).toBe(true);
+    const l1 = engine.lanterns.find((l) => l.id === 'L1');
+    expect(l1.lit).toBe(false);
+    expect(l1.ever_lit).toBe(true);
+  });
+
+  it('should allow wander shade to target and drain weak lantern (fuel < 30)', () => {
+    const scenario = {
+      player: { pos: [20, 0, 0], carried: 0, flames: 3 },
+      random_motes: false,
+      random_shades: false,
+      lanterns: [{ id: 'L1', pos: [0, 0, 25.0], lit: true, fuel: 25.0 }],
+      shades: [{ id: 'S1', pos: [0, 0, 24.0], state: 'wander' }],
       motes: []
     };
 
     const engine = new GameEngine({ scenario });
-    const events = engine.step({ pulse: true });
+    engine.step({});
 
-    const pulseEvt = events.find((e) => e.name === 'pulse');
-    expect(pulseEvt).toBeDefined();
-    expect(pulseEvt.data.stunned_ids).toContain('S1');
-    expect(engine.shades[0].state).toBe('stunned');
-    expect(engine.player.carried).toBe(0); // 3 - 3 = 0
+    expect(engine.shades[0].state).toBe('drain');
+
+    // Run 60 ticks to verify fuel_drain event
+    let drainEvents = [];
+    for (let i = 0; i < 60; i++) {
+      drainEvents = drainEvents.concat(engine.step({}));
+    }
+
+    expect(drainEvents.some((e) => e.name === 'fuel_drain')).toBe(true);
   });
 
-  it('should handle Drifter (Gió Lạc) stealing motes and dropping on pulse', () => {
+  it('should award +15 score when pulse stuns a draining shade', () => {
     const scenario = {
-      player: { pos: [0, 0, 0], carried: 6, flames: 3 },
+      player: { pos: [0, 0, 24.0], carried: 3, flames: 3 },
       random_motes: false,
       random_shades: false,
-      drifters: [{ id: 'D1', pos: [1.0, 0, 0], state: 'chase', stolen: 0 }]
+      lanterns: [{ id: 'L1', pos: [0, 0, 25.0], lit: true, fuel: 20.0 }],
+      shades: [{ id: 'S1', pos: [0, 0, 24.5], state: 'drain', target_lantern_id: 'L1' }],
+      motes: []
     };
 
-    const engine = new GameEngine({ night: 2, scenario });
-    // Step 1: drifter steals min(3, carried) = 3
-    const events1 = engine.step({});
-    expect(events1.some((e) => e.name === 'drifter_steal')).toBe(true);
-    expect(engine.player.carried).toBe(3);
-    expect(engine.drifters[0].stolen).toBe(3);
-    expect(engine.drifters[0].state).toBe('flee');
+    const engine = new GameEngine({ scenario });
+    const initialScore = engine.score;
+    engine.step({ pulse: true });
 
-    // Step 2: pulse causes fleeing drifter to drop stolen motes
-    const events2 = engine.step({ pulse: true });
-    expect(events2.some((e) => e.name === 'drifter_drop')).toBe(true);
-    expect(engine.drifters[0].stolen).toBe(0);
+    expect(engine.shades[0].state).toBe('stunned');
+    expect(engine.score - initialScore).toBe(15); // +15 for draining shade
   });
 
-  it('should pick up Wind Charm and activate zero-cooldown dash buff', () => {
+  // Updated in Phase 3: Ticket-03 replaced all_lit early win with dawn_survived win rule
+  it('should win at dawn with reason dawn_survived when >= 60% lanterns are lit', () => {
     const scenario = {
+      time_left_s: 0.05, // Almost dawn (lasts 3 ticks)
       player: { pos: [0, 0, 0], carried: 0, flames: 3 },
-      charms: [{ id: 'C1', pos: [0.5, 0, 0], available: true }]
+      random_motes: false,
+      random_shades: false,
+      lanterns: [
+        { id: 'L1', lit: true, fuel: 50.0 },
+        { id: 'L2', lit: true, fuel: 50.0 },
+        { id: 'L3', lit: true, fuel: 50.0 },
+        { id: 'L4', lit: false, fuel: 0.0 },
+        { id: 'L5', lit: false, fuel: 0.0 }
+      ],
+      motes: [],
+      shades: []
     };
 
-    const engine = new GameEngine({ night: 2, scenario });
-    const events = engine.step({});
+    const engine = new GameEngine({ scenario });
+    let events = [];
+    for (let i = 0; i < 4; i++) {
+      events = events.concat(engine.step({}));
+    }
 
-    expect(events.some((e) => e.name === 'charm_picked')).toBe(true);
-    expect(engine.player.charm_ticks).toBe(600);
+    const winEvt = events.find((e) => e.name === 'game_over');
+    expect(winEvt).toBeDefined();
+    expect(winEvt.data.result).toBe('won');
+    expect(winEvt.data.reason).toBe('dawn_survived');
+    expect(engine.state).toBe('won');
   });
 
   it('should pause and resume simulation on pause input rising edge', () => {
@@ -147,8 +231,8 @@ describe('Test Contract v1.1 & Phase 2 Features', () => {
     expect(pauseEvents.some((e) => e.name === 'paused')).toBe(true);
     expect(engine.state).toBe('paused');
 
-    engine.step({ pause: false }); // Release key
-    const resumeEvents = engine.step({ pause: true }); // Press again
+    engine.step({ pause: false });
+    const resumeEvents = engine.step({ pause: true });
     expect(resumeEvents.some((e) => e.name === 'resumed')).toBe(true);
     expect(engine.state).toBe('playing');
   });

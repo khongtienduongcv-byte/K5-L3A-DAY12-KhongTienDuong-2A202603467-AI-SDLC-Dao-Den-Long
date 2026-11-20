@@ -1,4 +1,4 @@
-# AGENTS.md — Quy tắc và Chỉ dẫn dành cho AI Agent (Cập nhật Phase 2)
+# AGENTS.md — Quy tắc và Chỉ dẫn dành cho AI Agent (Cập nhật Phase 3)
 
 Dự án: **Đảo Đèn Lồng** (Day 12 AI SDLC)
 Mã nộp: `K5-DAY12-KhongTienDuong-AI-SDLC-Dao-Den-Long`
@@ -15,28 +15,20 @@ Mã nộp: `K5-DAY12-KhongTienDuong-AI-SDLC-Dao-Den-Long`
     - `prng.js`: PRNG Mulberry32 bảo đảm tính tất định.
     - `math.js`: Chuyển đổi tọa độ, vector di chuyển, camera yaw.
     - `maps.js`: Định nghĩa địa hình, đèn, bục nhảy, bùa cho cả 3 Đêm.
-    - `engine.js`: Vòng lặp mô phỏng 60 tick/giây theo 12 bước cố định.
+    - `engine.js`: Vòng lặp mô phỏng 60 tick/giây theo 12 bước cố định (Contract v1.2).
   - `src/render/`: Three.js hiển thị giao diện 3D trong trình duyệt theo bảng màu chuẩn.
-  - `src/cli/`: Headless CLI runner giao tiếp theo `Test Contract v1.1`.
+  - `src/cli/`: Headless CLI runner giao tiếp theo `Test Contract v1.2`.
 
-## 3. Quy chuẩn Test Contract v1.1 (Nghiêm ngặt)
+## 3. Quy chuẩn Test Contract v1.2 (Nghiêm ngặt)
 - Tần số mô phỏng: Cố định 60 tick/giây ($1 \text{ tick} = 1/60 \text{ s}$).
-- Hỗ trợ tham số `--night <1|2|3>`.
-- Trạng thái Bóng Mực: Bắt buộc dùng đúng 5 tên: `spawning`, `wander`, `chase`, `recoil`, `stunned`.
-- Khi test cơ chế rơi khỏi đảo ($Y < -10$), tọa độ XZ của nhân vật phải nằm ngoài bán kính đất liền của hòn đảo tương ứng.
-- Thứ tự xử lý 12 bước trong mỗi tick:
-  1. Đọc input (xử lý `pause` trước).
-  2. Giảm các bộ đếm (thời gian, hồi chiêu, bất tử, choáng, bùa, TTL đom đóm, hồi bùa).
-  3. Di chuyển Mây (nhảy, lướt, bục nhảy, gió) và kiểm tra rơi khỏi đảo.
-  4. Nhặt đom đóm và bùa.
-  5. Tương tác với đèn.
-  6. Cập nhật vùng an toàn.
-  7. Tỏa Sáng.
-  8. Di chuyển Bóng Mực và Gió Lạc.
-  9. Chạm (Gió Lạc cướp trước, rồi Bóng Mực gây hit theo thứ tự id tăng dần).
-  10. Sinh thực thể theo lịch.
-  11. Xét thắng/thua.
-  12. Ghi snapshot nếu tới lượt.
+- **Luật kết thúc Đêm:** Tuyệt đối **KHÔNG** kết thúc game khi thắp đủ đèn (`all_lit` đã bị bãi bỏ). Game chỉ kết thúc khi:
+  - Hết Ngọn Lửa (`reason: "no_flames"`).
+  - Hết giờ (Bình minh): nếu số đèn đang sáng $\ge \lceil 0.6 \times \text{tổng đèn} \rceil$ thì thắng (`reason: "dawn_survived"`), ngược lại thì thua (`reason: "dawn"`).
+- **Cơ chế Dầu Đèn:**
+  - Tiêu hao tự nhiên 1.0 fuel/s.
+  - Khi `fuel < 30`, đèn mất vùng an toàn; Bóng Mực `wander` tiếp cận và hút 5 fuel/s (`drain` state).
+  - Khi `fuel <= 0`, đèn tắt (`lantern_out`). Đèn thắp lại (`ever_lit: true`) chỉ cần 5 đom đóm.
+- Trạng thái Bóng Mực bắt buộc gồm: `spawning`, `wander`, `chase`, `drain`, `recoil`, `stunned`.
 
 ## 4. Quy ước Code & Git
 - Commit nhỏ, rõ nghĩa, gắn tag chuẩn `phase-1`, `phase-2`, `phase-3`, `phase-4`.

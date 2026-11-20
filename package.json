@@ -1,0 +1,21 @@
+{
+  "name": "dao-den-long",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "headless": "node src/cli/headless.js"
+  },
+  "dependencies": {
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.170.0",
+    "vite": "^6.0.0",
+    "vitest": "^2.1.0"
+  }
+}

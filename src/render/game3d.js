@@ -247,42 +247,184 @@ function buildIsland(night) {
   }
 }
 
-// Player visual
+// Upgraded Mây Character Model (Vietnamese Traditional Style)
 const playerGroup = new THREE.Group();
-const bodyMesh = new THREE.Mesh(
-  new THREE.CylinderGeometry(0.4, 0.45, 1.2, 16),
-  new THREE.MeshStandardMaterial({ color: 0xe8e2d0, roughness: 0.5 })
-);
-bodyMesh.position.y = 0.6;
+
+// 1. Chân & Quần lụa đen
+const legMat = new THREE.MeshStandardMaterial({ color: 0x181824, roughness: 0.8 });
+const leftLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.45, 8), legMat);
+leftLeg.position.set(-0.16, 0.22, 0);
+playerGroup.add(leftLeg);
+
+const rightLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.45, 8), legMat);
+rightLeg.position.set(0.16, 0.22, 0);
+playerGroup.add(rightLeg);
+
+// Guốc mộc nhỏ
+const shoeMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.6 });
+const leftShoe = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.08, 0.22), shoeMat);
+leftShoe.position.set(-0.16, 0.04, 0.03);
+playerGroup.add(leftShoe);
+
+const rightShoe = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.08, 0.22), shoeMat);
+rightShoe.position.set(0.16, 0.04, 0.03);
+playerGroup.add(rightShoe);
+
+// 2. Thân Áo Tứ Thân / Bà Ba ngọc bích rực rỡ với đai thắt lưng vàng kim
+const robeMat = new THREE.MeshStandardMaterial({
+  color: 0x0d9488, // Xanh ngọc bích tươi tắn
+  roughness: 0.45,
+  metalness: 0.1
+});
+const bodyMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.44, 0.75, 16), robeMat);
+bodyMesh.position.y = 0.72;
 playerGroup.add(bodyMesh);
 
-const hatMesh = new THREE.Mesh(
-  new THREE.ConeGeometry(0.85, 0.45, 24),
-  new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.8 })
-);
-hatMesh.position.y = 1.35;
-playerGroup.add(hatMesh);
+// Đai lưng lụa vàng hoàng gia (Golden silk sash)
+const sashMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.3, emissive: 0xeab308, emissiveIntensity: 0.3 });
+const sashMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.38, 0.15, 16), sashMat);
+sashMesh.position.y = 0.72;
+playerGroup.add(sashMesh);
 
-const handLantern = new THREE.Mesh(
-  new THREE.BoxGeometry(0.2, 0.25, 0.2),
-  new THREE.MeshStandardMaterial({ color: 0xffb347, emissive: 0xffe58a, emissiveIntensity: 1 })
-);
-handLantern.position.set(0.45, 0.7, 0.3);
-playerGroup.add(handLantern);
+// Dải lụa thắt buông rủ phía trước
+const ribbonMesh = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.35, 0.04), sashMat);
+ribbonMesh.position.set(0, 0.52, 0.36);
+ribbonMesh.rotation.x = -0.1;
+playerGroup.add(ribbonMesh);
 
-const playerLight = new THREE.PointLight(0xffb347, 1.5, 7);
-playerLight.position.set(0.45, 0.7, 0.3);
+// 3. Đầu & Khuôn mặt chibi đáng yêu
+const skinMat = new THREE.MeshStandardMaterial({ color: 0xffe2b8, roughness: 0.6 }); // Màu da sáng mịn
+const headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 16), skinMat);
+headMesh.position.y = 1.25;
+playerGroup.add(headMesh);
+
+// Mắt đen nhánh to tròn
+const eyeMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
+const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), eyeMat);
+leftEye.position.set(-0.09, 1.28, 0.25);
+playerGroup.add(leftEye);
+
+const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), eyeMat);
+rightEye.position.set(0.09, 1.28, 0.25);
+playerGroup.add(rightEye);
+
+// Đôi má ửng hồng dễ thương
+const blushMat = new THREE.MeshBasicMaterial({ color: 0xf472b6, transparent: true, opacity: 0.6 });
+const leftBlush = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 8), blushMat);
+leftBlush.position.set(-0.16, 1.22, 0.22);
+playerGroup.add(leftBlush);
+
+const rightBlush = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 8), blushMat);
+rightBlush.position.set(0.16, 1.22, 0.22);
+playerGroup.add(rightBlush);
+
+// 4. Nón Lá Tre Việt Nam chi tiết
+const hatGroup = new THREE.Group();
+hatGroup.position.set(0, 1.38, 0);
+
+// Chóp nón lá rơm vàng ấm
+const hatStrawMat = new THREE.MeshStandardMaterial({ color: 0xfde047, roughness: 0.7 });
+const hatMesh = new THREE.Mesh(new THREE.ConeGeometry(0.85, 0.42, 24), hatStrawMat);
+hatGroup.add(hatMesh);
+
+// Vành nón lá nẹp chỉ đỏ son truyền thống
+const hatRimMat = new THREE.MeshBasicMaterial({ color: 0xc8102e });
+const hatRim = new THREE.Mesh(new THREE.TorusGeometry(0.85, 0.025, 8, 24), hatRimMat);
+hatRim.rotation.x = Math.PI / 2;
+hatGroup.add(hatRim);
+
+// Chóp đồng nhọn nhỏ trên đỉnh nón
+const hatTip = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.15, 8), new THREE.MeshStandardMaterial({ color: 0xb45309 }));
+hatTip.position.y = 0.26;
+hatGroup.add(hatTip);
+
+// Quai nón lụa ngọc bích rủ hai bên
+const strapMat = new THREE.MeshBasicMaterial({ color: 0x14b8a6 });
+const leftStrap = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.4, 6), strapMat);
+leftStrap.position.set(-0.25, -0.15, 0.05);
+leftStrap.rotation.z = -0.25;
+hatGroup.add(leftStrap);
+
+const rightStrap = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.4, 6), strapMat);
+rightStrap.position.set(0.25, -0.15, 0.05);
+rightStrap.rotation.z = 0.25;
+hatGroup.add(rightStrap);
+
+playerGroup.add(hatGroup);
+
+// 5. Chiếc Đèn Lồng Cầm Tay Hoa Sen Tinh Xảo (Handheld Lotus Lantern)
+const handLanternGroup = new THREE.Group();
+handLanternGroup.position.set(0.42, 0.65, 0.25);
+
+// Cán cầm tre thanh mảnh
+const stickMat = new THREE.MeshStandardMaterial({ color: 0xa16207, roughness: 0.8 });
+const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.45, 6), stickMat);
+stick.rotation.z = 0.5;
+handLanternGroup.add(stick);
+
+// Dây treo đèn
+const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.2, 6), hatRimMat);
+cord.position.set(0.12, -0.05, 0);
+handLanternGroup.add(cord);
+
+// Lồng đèn hoa sen quả trám phát sáng rực rỡ
+const lanternMat = new THREE.MeshStandardMaterial({
+  color: 0xffa500,
+  emissive: 0xffe58a,
+  emissiveIntensity: 2.5,
+  roughness: 0.3
+});
+const handLantern = new THREE.Mesh(new THREE.OctahedronGeometry(0.16, 1), lanternMat);
+handLantern.position.set(0.12, -0.22, 0);
+handLanternGroup.add(handLantern);
+
+// Tua rua đỏ nhỏ dưới đáy đèn cầm tay
+const miniTassel = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.04, 0.15, 6), hatRimMat);
+miniTassel.position.set(0.12, -0.34, 0);
+handLanternGroup.add(miniTassel);
+
+playerGroup.add(handLanternGroup);
+
+// Nguồn sáng tỏa từ đèn của Mây
+const playerLight = new THREE.PointLight(0xffb347, 2.2, 8);
+playerLight.position.set(0.54, 0.43, 0.25);
 playerGroup.add(playerLight);
+
 scene.add(playerGroup);
 
-// Pulse Ring
+// Particle & Trail Effects Managers
+// 1. Dash Smoke / Ghost Afterimages
+const dashGhosts = [];
+
+// 2. Footstep Sparks
+const footstepSparks = [];
+const sparkGeo = new THREE.SphereGeometry(0.06, 6, 6);
+const sparkMat = new THREE.MeshBasicMaterial({ color: 0xffe58a, transparent: true, opacity: 0.8 });
+
+function spawnFootstepSpark(x, y, z) {
+  const s = new THREE.Mesh(sparkGeo, sparkMat.clone());
+  s.position.set(x + (Math.random() - 0.5) * 0.2, y, z + (Math.random() - 0.5) * 0.2);
+  scene.add(s);
+  footstepSparks.push({ mesh: s, life: 1.0 });
+}
+
+// 3. Pulse Shockwave Rings
 const pulseRing = new THREE.Mesh(
-  new THREE.RingGeometry(0.2, 0.5, 32),
+  new THREE.RingGeometry(0.2, 0.6, 32),
   new THREE.MeshBasicMaterial({ color: 0xffe58a, side: THREE.DoubleSide, transparent: true, opacity: 0 })
 );
 pulseRing.rotation.x = -Math.PI / 2;
 pulseRing.position.y = 0.05;
 scene.add(pulseRing);
+
+const pulseInnerRing = new THREE.Mesh(
+  new THREE.RingGeometry(0.1, 0.3, 32),
+  new THREE.MeshBasicMaterial({ color: 0xffa500, side: THREE.DoubleSide, transparent: true, opacity: 0 })
+);
+pulseInnerRing.rotation.x = -Math.PI / 2;
+pulseInnerRing.position.y = 0.06;
+scene.add(pulseInnerRing);
+
 let pulseAnim = { active: false, radius: 0, opacity: 0 };
 
 // Lantern visuals with Fuel Bars
@@ -315,6 +457,23 @@ function syncLanterns(lanterns) {
     const lotusBase = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.48, 0.18, 8), stoneMat1);
     lotusBase.position.y = 0.45;
     g.add(lotusBase);
+
+    // 1b. Vành hào quang viền chân bệ đá (Golden Outline Rims)
+    const baseGlowRing = new THREE.Mesh(
+      new THREE.RingGeometry(0.85, 0.96, 32),
+      new THREE.MeshBasicMaterial({ color: 0xffd700, side: THREE.DoubleSide, transparent: true, opacity: 0.55 })
+    );
+    baseGlowRing.rotation.x = -Math.PI / 2;
+    baseGlowRing.position.y = 0.04;
+    g.add(baseGlowRing);
+
+    const baseMidRim = new THREE.Mesh(
+      new THREE.TorusGeometry(0.68, 0.02, 8, 24),
+      new THREE.MeshBasicMaterial({ color: 0xffe58a })
+    );
+    baseMidRim.rotation.x = Math.PI / 2;
+    baseMidRim.position.y = 0.38;
+    g.add(baseMidRim);
 
     // 2. Thân cột gỗ sơn son thếp vàng
     const woodMat = new THREE.MeshStandardMaterial({ color: 0x6e2215, roughness: 0.7 }); // Gỗ gụ son trầm
@@ -361,22 +520,37 @@ function syncLanterns(lanterns) {
     lanternSilk.position.y = 3.15;
     g.add(lanternSilk);
 
-    // Khung vành gỗ trên và dưới của lồng đèn
+    // Khung vành gỗ trên và dưới của lồng đèn có viền vàng
     const rimMat = new THREE.MeshStandardMaterial({ color: 0x3d120a, roughness: 0.8 });
     const topRim = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.08, 6), rimMat);
     topRim.position.y = 3.68;
     g.add(topRim);
 
+    const topGoldRim = new THREE.Mesh(new THREE.TorusGeometry(0.56, 0.015, 8, 24), new THREE.MeshBasicMaterial({ color: 0xffd700 }));
+    topGoldRim.rotation.x = Math.PI / 2;
+    topGoldRim.position.y = 3.72;
+    g.add(topGoldRim);
+
     const botRim = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.44, 0.08, 6), rimMat);
     botRim.position.y = 2.62;
     g.add(botRim);
 
-    // 5. Mái ngói cong đình làng tứ giác uốn đầu đao
+    // 5. Mái ngói cong đình làng tứ giác uốn đầu đao & viền mái ngói vàng rực
     const roofMat = new THREE.MeshStandardMaterial({ color: 0x8a2818, roughness: 0.6 });
     const roof = new THREE.Mesh(new THREE.ConeGeometry(0.85, 0.45, 4), roofMat);
     roof.rotation.y = Math.PI / 4;
     roof.position.y = 3.92;
     g.add(roof);
+
+    // Viền 4 góc mái ngói uốn cong
+    const roofRidgeMat = new THREE.MeshBasicMaterial({ color: 0xffe58a });
+    for (let r = 0; r < 4; r++) {
+      const ridge = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.46, 0.04), roofRidgeMat);
+      ridge.rotation.z = 0.72;
+      ridge.rotation.y = (r * Math.PI) / 2 + Math.PI / 4;
+      ridge.position.set(0, 3.88, 0);
+      g.add(ridge);
+    }
 
     // Quả hồ lô đỉnh chóp đồng tụ khí
     const gourdBot = new THREE.Mesh(new THREE.SphereGeometry(0.1, 10, 10), brassMat);
@@ -466,95 +640,259 @@ function syncLanterns(lanterns) {
   }
 }
 
-// Mote Visuals
+// Upgraded Mote Visuals (Glowing Core & Pulsing Halo)
 const moteMeshes = new Map();
-const moteGeo = new THREE.SphereGeometry(0.2, 12, 12);
-const moteMat = new THREE.MeshStandardMaterial({ color: 0xfff6c2, emissive: 0xffe58a, emissiveIntensity: 1.5 });
+
+function createMoteVisual() {
+  const g = new THREE.Group();
+  
+  // Lõi sáng vàng rực
+  const coreMat = new THREE.MeshStandardMaterial({
+    color: 0xfff6c2,
+    emissive: 0xffe58a,
+    emissiveIntensity: 2.2,
+    roughness: 0.2
+  });
+  const core = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 12), coreMat);
+  g.add(core);
+
+  // Quầng hào quang phát quang mềm mại
+  const haloMat = new THREE.MeshBasicMaterial({
+    color: 0xffe58a,
+    transparent: true,
+    opacity: 0.4,
+    side: THREE.BackSide
+  });
+  const halo = new THREE.Mesh(new THREE.SphereGeometry(0.32, 12, 12), haloMat);
+  g.add(halo);
+
+  const light = new THREE.PointLight(0xffe58a, 0.6, 2.5);
+  g.add(light);
+
+  return { group: g, core, halo };
+}
 
 function syncMotes(motes) {
   const activeIds = new Set(motes.map((m) => m.id));
-  for (const [id, mesh] of moteMeshes.entries()) {
+  for (const [id, entry] of moteMeshes.entries()) {
     if (!activeIds.has(id)) {
-      scene.remove(mesh);
+      scene.remove(entry.group);
       moteMeshes.delete(id);
     }
   }
 
   for (const m of motes) {
-    let mesh = moteMeshes.get(m.id);
-    if (!mesh) {
-      mesh = new THREE.Mesh(moteGeo, moteMat);
-      scene.add(mesh);
-      moteMeshes.set(m.id, mesh);
+    let entry = moteMeshes.get(m.id);
+    if (!entry) {
+      entry = createMoteVisual();
+      scene.add(entry.group);
+      moteMeshes.set(m.id, entry);
     }
-    const bob = Math.sin(Date.now() * 0.005 + m.pos[0]) * 0.12;
-    mesh.position.set(m.pos[0], m.pos[1] + 0.35 + bob, m.pos[2]);
+    const bob = Math.sin(Date.now() * 0.005 + m.pos[0] * 2) * 0.14;
+    const pulseScale = 1.0 + 0.1 * Math.sin(Date.now() * 0.008 + m.pos[2]);
+    entry.halo.scale.set(pulseScale, pulseScale, pulseScale);
+    entry.group.position.set(m.pos[0], m.pos[1] + 0.38 + bob, m.pos[2]);
   }
 }
 
-// Shade Visuals
+// Upgraded Shade Visuals (Dark Ink Wraith with Crimson Eyes & Tentacles)
 const shadeMeshes = new Map();
-const shadeGeo = new THREE.SphereGeometry(0.65, 16, 16);
-const shadeMat = new THREE.MeshStandardMaterial({ color: 0x120a1a, emissive: 0x7a3cff, emissiveIntensity: 0.6 });
+
+function createShadeVisual() {
+  const g = new THREE.Group();
+
+  // 1. Thân giọt mực hắc ám dẹt
+  const bodyMat = new THREE.MeshStandardMaterial({
+    color: 0x090312,
+    roughness: 0.2,
+    metalness: 0.3,
+    emissive: 0x581c87, // Ánh tím ma quái
+    emissiveIntensity: 0.9
+  });
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.55, 16, 16), bodyMat);
+  body.scale.set(1.0, 1.15, 1.0);
+  body.position.y = 0.55;
+  g.add(body);
+
+  // 2. Vầng hào quang tà khí
+  const auraMat = new THREE.MeshBasicMaterial({
+    color: 0x9333ea,
+    transparent: true,
+    opacity: 0.25,
+    side: THREE.BackSide
+  });
+  const aura = new THREE.Mesh(new THREE.SphereGeometry(0.72, 12, 12), auraMat);
+  aura.position.y = 0.55;
+  g.add(aura);
+
+  // 3. Đôi mắt đỏ rực tà khí
+  const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0044 });
+  const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), eyeMat);
+  leftEye.position.set(-0.18, 0.65, 0.44);
+  g.add(leftEye);
+
+  const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), eyeMat);
+  rightEye.position.set(0.18, 0.65, 0.44);
+  g.add(rightEye);
+
+  // Con ngươi rực sáng
+  const pupilMat = new THREE.MeshBasicMaterial({ color: 0xffe58a });
+  const leftPupil = new THREE.Mesh(new THREE.SphereGeometry(0.035, 6, 6), pupilMat);
+  leftPupil.position.set(-0.18, 0.65, 0.51);
+  g.add(leftPupil);
+
+  const rightPupil = new THREE.Mesh(new THREE.SphereGeometry(0.035, 6, 6), pupilMat);
+  rightPupil.position.set(0.18, 0.65, 0.51);
+  g.add(rightPupil);
+
+  // 4. 4 xúc tua mực uốn lượn bên dưới
+  const tentacleMat = new THREE.MeshStandardMaterial({ color: 0x1e0b36, roughness: 0.5 });
+  const tentacles = [];
+  for (let i = 0; i < 4; i++) {
+    const angle = (i * Math.PI) / 2;
+    const t = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.45, 8), tentacleMat);
+    t.rotation.x = Math.PI;
+    t.position.set(Math.cos(angle) * 0.22, 0.15, Math.sin(angle) * 0.22);
+    g.add(t);
+    tentacles.push(t);
+  }
+
+  // 5. Ngôi sao choáng xoay trên đầu
+  const stunGroup = new THREE.Group();
+  stunGroup.position.set(0, 1.25, 0);
+  const starMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
+  for (let i = 0; i < 3; i++) {
+    const star = new THREE.Mesh(new THREE.OctahedronGeometry(0.09, 0), starMat);
+    const a = (i * Math.PI * 2) / 3;
+    star.position.set(Math.cos(a) * 0.32, 0, Math.sin(a) * 0.32);
+    stunGroup.add(star);
+  }
+  stunGroup.visible = false;
+  g.add(stunGroup);
+
+  return { group: g, body, aura, leftEye, rightEye, tentacles, stunGroup };
+}
 
 function syncShades(shades) {
   const activeIds = new Set(shades.map((s) => s.id));
-  for (const [id, mesh] of shadeMeshes.entries()) {
+  for (const [id, entry] of shadeMeshes.entries()) {
     if (!activeIds.has(id)) {
-      scene.remove(mesh);
+      scene.remove(entry.group);
       shadeMeshes.delete(id);
     }
   }
 
-  const shadeAura = colorblindMode ? 0x00b3ff : 0x7a3cff;
+  const shadeAuraColor = colorblindMode ? 0x00b3ff : 0x9333ea;
 
   for (const s of shades) {
-    let mesh = shadeMeshes.get(s.id);
-    if (!mesh) {
-      mesh = new THREE.Mesh(shadeGeo, shadeMat.clone());
-      scene.add(mesh);
-      shadeMeshes.set(s.id, mesh);
+    let entry = shadeMeshes.get(s.id);
+    if (!entry) {
+      entry = createShadeVisual();
+      scene.add(entry.group);
+      shadeMeshes.set(s.id, entry);
     }
-    const bob = Math.sin(Date.now() * 0.003 + s.pos[2]) * 0.1;
-    mesh.position.set(s.pos[0], s.pos[1] + 0.75 + bob, s.pos[2]);
+    const bob = Math.sin(Date.now() * 0.004 + s.pos[2] * 2) * 0.12;
+    entry.group.position.set(s.pos[0], s.pos[1] + 0.2 + bob, s.pos[2]);
+
+    // Uốn lượn xúc tua theo thời gian
+    const tentTime = Date.now() * 0.006;
+    entry.tentacles.forEach((t, idx) => {
+      t.rotation.z = Math.sin(tentTime + idx) * 0.25;
+      t.rotation.x = Math.PI + Math.cos(tentTime + idx) * 0.25;
+    });
 
     if (s.state === 'stunned') {
-      mesh.material.emissive.setHex(0x3a3450);
-      mesh.rotation.y += 0.1;
+      entry.stunGroup.visible = true;
+      entry.stunGroup.rotation.y += 0.12;
+      entry.body.material.emissive.setHex(0x3a3450);
+      entry.leftEye.material.color.setHex(0x441122);
+      entry.rightEye.material.color.setHex(0x441122);
     } else if (s.state === 'drain') {
-      mesh.material.emissive.setHex(0xf59e0b); // Pulsing amber while draining
-      mesh.rotation.y += 0.05;
+      entry.stunGroup.visible = false;
+      // Mắt đỏ cam rực rỡ chớp giật liên tục khi hút dầu
+      const drainBlink = Math.sin(Date.now() * 0.012) > 0;
+      entry.body.material.emissive.setHex(drainBlink ? 0xf59e0b : 0xd97706);
+      entry.leftEye.material.color.setHex(drainBlink ? 0xff5a00 : 0xffaa00);
+      entry.rightEye.material.color.setHex(drainBlink ? 0xff5a00 : 0xffaa00);
     } else {
-      mesh.material.emissive.setHex(shadeAura);
+      entry.stunGroup.visible = false;
+      entry.body.material.emissive.setHex(shadeAuraColor);
+      entry.leftEye.material.color.setHex(0xff0044);
+      entry.rightEye.material.color.setHex(0xff0044);
     }
   }
 }
 
-// Drifter Visuals (Gió Lạc)
+// Upgraded Drifter Visuals (Whirlwind Spirit with Flapping Ethereal Wings)
 const drifterMeshes = new Map();
-const drifterGeo = new THREE.CylinderGeometry(0.15, 0.4, 1.2, 12);
-const drifterMat = new THREE.MeshStandardMaterial({ color: 0x8fa3b8, emissive: 0x38bdf8, emissiveIntensity: 0.8 });
+
+function createDrifterVisual() {
+  const g = new THREE.Group();
+
+  // Lõi xoáy lốc xanh băng
+  const cycloneMat = new THREE.MeshStandardMaterial({
+    color: 0x0284c7,
+    emissive: 0x38bdf8,
+    emissiveIntensity: 1.0,
+    roughness: 0.3
+  });
+  const cyclone = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.42, 1.1, 10), cycloneMat);
+  cyclone.position.y = 0.55;
+  g.add(cyclone);
+
+  // Đôi cánh gió lụa trong suốt
+  const wingMat = new THREE.MeshBasicMaterial({
+    color: 0xbae6fd,
+    transparent: true,
+    opacity: 0.65,
+    side: THREE.DoubleSide
+  });
+  const leftWing = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.02, 0.25), wingMat);
+  leftWing.position.set(-0.35, 0.75, 0);
+  g.add(leftWing);
+
+  const rightWing = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.02, 0.25), wingMat);
+  rightWing.position.set(0.35, 0.75, 0);
+  g.add(rightWing);
+
+  // Đốm đom đóm cướp được nằm trong bụng
+  const stolenMote = new THREE.Mesh(
+    new THREE.SphereGeometry(0.12, 8, 8),
+    new THREE.MeshBasicMaterial({ color: 0xffe58a })
+  );
+  stolenMote.position.y = 0.55;
+  stolenMote.visible = false;
+  g.add(stolenMote);
+
+  return { group: g, cyclone, leftWing, rightWing, stolenMote };
+}
 
 function syncDrifters(drifters) {
   const activeIds = new Set(drifters.map((d) => d.id));
-  for (const [id, mesh] of drifterMeshes.entries()) {
+  for (const [id, entry] of drifterMeshes.entries()) {
     if (!activeIds.has(id)) {
-      scene.remove(mesh);
+      scene.remove(entry.group);
       drifterMeshes.delete(id);
     }
   }
 
   for (const d of drifters) {
-    let mesh = drifterMeshes.get(d.id);
-    if (!mesh) {
-      mesh = new THREE.Mesh(drifterGeo, drifterMat.clone());
-      scene.add(mesh);
-      drifterMeshes.set(d.id, mesh);
+    let entry = drifterMeshes.get(d.id);
+    if (!entry) {
+      entry = createDrifterVisual();
+      scene.add(entry.group);
+      drifterMeshes.set(d.id, entry);
     }
-    const bob = Math.sin(Date.now() * 0.006 + d.pos[0]) * 0.15;
-    mesh.position.set(d.pos[0], d.pos[1] + bob, d.pos[2]);
-    mesh.rotation.z = Math.PI / 4;
-    mesh.rotation.y += 0.05;
+    const bob = Math.sin(Date.now() * 0.007 + d.pos[0] * 2) * 0.18;
+    entry.group.position.set(d.pos[0], d.pos[1] + 0.4 + bob, d.pos[2]);
+
+    // Xoay lốc xoáy và đập cánh
+    entry.cyclone.rotation.y += 0.15;
+    const flap = Math.sin(Date.now() * 0.015) * 0.35;
+    entry.leftWing.rotation.z = flap;
+    entry.rightWing.rotation.z = -flap;
+
+    entry.stolenMote.visible = d.carried_motes > 0;
   }
 }
 
@@ -943,6 +1281,69 @@ function animate(currentTime) {
     playerGroup.rotation.y = Math.atan2(lastMoveX, lastMoveZ);
   }
 
+  // 1. Dash Smoke & Ghost Afterimages Trail (Hiệu ứng sau khi lướt)
+  if (engine.player.dash_ticks_left > 0) {
+    // Tàn ảnh bóng ma Mây
+    const ghost = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.35, 0.45, 1.1, 12),
+      new THREE.MeshBasicMaterial({
+        color: 0x2dd4bf, // Ngọc bích phát sáng
+        transparent: true,
+        opacity: 0.7
+      })
+    );
+    ghost.position.copy(playerGroup.position);
+    ghost.rotation.copy(playerGroup.rotation);
+    scene.add(ghost);
+    dashGhosts.push({ mesh: ghost, life: 1.0 });
+
+    // Vệt khói lướt (Smoke puff)
+    const smoke = new THREE.Mesh(
+      new THREE.SphereGeometry(0.25, 8, 8),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 })
+    );
+    smoke.position.set(
+      engine.player.pos[0] + (Math.random() - 0.5) * 0.3,
+      engine.player.pos[1] + 0.3,
+      engine.player.pos[2] + (Math.random() - 0.5) * 0.3
+    );
+    scene.add(smoke);
+    dashGhosts.push({ mesh: smoke, life: 0.8, isSmoke: true });
+  }
+
+  // Cập nhật và tan biến vệt khói / bóng ma lướt
+  for (let i = dashGhosts.length - 1; i >= 0; i--) {
+    const dg = dashGhosts[i];
+    dg.life -= 0.055;
+    dg.mesh.material.opacity = Math.max(0, dg.life * (dg.isSmoke ? 0.5 : 0.7));
+    if (dg.isSmoke) {
+      dg.mesh.scale.multiplyScalar(1.04);
+      dg.mesh.position.y += 0.015;
+    } else {
+      dg.mesh.scale.multiplyScalar(0.96);
+    }
+    if (dg.life <= 0) {
+      scene.remove(dg.mesh);
+      dashGhosts.splice(i, 1);
+    }
+  }
+
+  // 2. Vệt đốm sáng bước chân khi di chuyển trên mặt đất
+  if ((lastMoveX !== 0 || lastMoveZ !== 0) && engine.player.grounded && engine.tick % 5 === 0) {
+    spawnFootstepSpark(engine.player.pos[0], engine.player.pos[1] + 0.04, engine.player.pos[2]);
+  }
+
+  for (let i = footstepSparks.length - 1; i >= 0; i--) {
+    const s = footstepSparks[i];
+    s.life -= 0.05;
+    s.mesh.material.opacity = Math.max(0, s.life * 0.8);
+    s.mesh.position.y += 0.008;
+    if (s.life <= 0) {
+      scene.remove(s.mesh);
+      footstepSparks.splice(i, 1);
+    }
+  }
+
   // Camera Follow
   const targetCamX = engine.player.pos[0];
   const targetCamY = engine.player.pos[1] + 9.0;
@@ -960,14 +1361,24 @@ function animate(currentTime) {
 
   camera.lookAt(engine.player.pos[0], engine.player.pos[1] + 1.0, engine.player.pos[2]);
 
-  // Pulse animation
+  // Pulse Shockwave Rings Animation
   if (pulseAnim.active) {
-    pulseAnim.radius += 0.25;
-    pulseAnim.opacity -= 0.03;
+    pulseAnim.radius += 0.32;
+    pulseAnim.opacity -= 0.032;
+
     pulseRing.scale.set(pulseAnim.radius, pulseAnim.radius, 1);
     pulseRing.position.set(engine.player.pos[0], engine.player.pos[1] + 0.05, engine.player.pos[2]);
     pulseRing.material.opacity = Math.max(0, pulseAnim.opacity);
-    if (pulseAnim.opacity <= 0) pulseAnim.active = false;
+
+    pulseInnerRing.scale.set(pulseAnim.radius * 0.75, pulseAnim.radius * 0.75, 1);
+    pulseInnerRing.position.set(engine.player.pos[0], engine.player.pos[1] + 0.06, engine.player.pos[2]);
+    pulseInnerRing.material.opacity = Math.max(0, pulseAnim.opacity * 1.3);
+
+    if (pulseAnim.opacity <= 0) {
+      pulseAnim.active = false;
+      pulseRing.material.opacity = 0;
+      pulseInnerRing.material.opacity = 0;
+    }
   }
 
   // Sync Entities
